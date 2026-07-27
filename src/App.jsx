@@ -29,8 +29,8 @@ const WHATSAPP_URL =
 
 const navItems = [
   ["01", "Home", "home"],
-  ["02", "Approach", "about"],
-  ["03", "Projects", "projects"],
+  ["02", "Projects", "projects"],
+  ["03", "Approach", "about"],
   ["04", "Services", "services"],
   ["05", "Principles", "clients"],
 ];
@@ -320,6 +320,7 @@ export function App() {
     let ScrollTrigger;
     let syncProcessPaths;
     let measureProjectPositions;
+    const cinematicControllers = [];
 
     const initialiseDesktopAnimations = async () => {
       const [{ default: gsap }, scrollTriggerModule] = await Promise.all([
@@ -333,6 +334,51 @@ export function App() {
       document.body.classList.add("hero-intro-running");
 
       ctx = gsap.context(() => {
+      const createCinematicScrollDriver = (
+        timeline,
+        scrollTriggerConfig,
+        maxProgressPerSecond = 0.36,
+      ) => {
+        const state = { current: 0, target: 0 };
+        const configuredUpdate = scrollTriggerConfig.onUpdate;
+        timeline.pause(0);
+
+        const tick = (_time, deltaTime) => {
+          const distance = state.target - state.current;
+          if (Math.abs(distance) < 0.0001) {
+            if (state.current !== state.target) {
+              state.current = state.target;
+              timeline.progress(state.current);
+            }
+            return;
+          }
+
+          const frameSeconds = Math.min(deltaTime, 50) / 1000;
+          const maximumStep = maxProgressPerSecond * frameSeconds;
+          state.current += gsap.utils.clamp(-maximumStep, maximumStep, distance);
+          timeline.progress(state.current);
+        };
+
+        gsap.ticker.add(tick);
+        const scrollTrigger = ScrollTrigger.create({
+          ...scrollTriggerConfig,
+          scrub: false,
+          onUpdate: (self) => {
+            state.target = self.progress;
+            configuredUpdate?.(self);
+          },
+        });
+
+        const controller = {
+          kill: () => {
+            gsap.ticker.remove(tick);
+            scrollTrigger.kill();
+          },
+        };
+        cinematicControllers.push(controller);
+        return controller;
+      };
+
       const heading = document.querySelector(".hero-copy h1");
       const headingLines = gsap.utils.toArray(".hero-reveal");
       const copyDetails = gsap.utils.toArray(
@@ -539,16 +585,18 @@ export function App() {
         });
       });
 
-      const approachTl = gsap.timeline({
-        scrollTrigger: {
+      const approachTl = gsap.timeline({ paused: true });
+      createCinematicScrollDriver(
+        approachTl,
+        {
           trigger: ".about-section",
-          start: "top top",
+          start: "top 58%",
           end: "bottom bottom",
-          scrub: 0.62,
           refreshPriority: -1,
           invalidateOnRefresh: true,
         },
-      });
+        0.34,
+      );
 
       approachTl
         .to(approachWords, {
@@ -639,16 +687,18 @@ export function App() {
         autoAlpha: 0,
       });
 
-      const servicesTl = gsap.timeline({
-        scrollTrigger: {
+      const servicesTl = gsap.timeline({ paused: true });
+      createCinematicScrollDriver(
+        servicesTl,
+        {
           trigger: ".services-section",
           start: "top top",
           end: "bottom bottom",
-          scrub: 0.62,
           refreshPriority: -2,
           invalidateOnRefresh: true,
         },
-      });
+        0.28,
+      );
 
       servicesTl
         .to(serviceWords, {
@@ -720,13 +770,13 @@ export function App() {
         }, "-=0.2")
         .to({}, { duration: 0.3 })
         .to(".services-scene", {
-          xPercent: () => (window.innerWidth <= 620 ? -9 : -14),
-          yPercent: () => (window.innerWidth <= 620 ? -8 : -13),
-          scale: () => (window.innerWidth <= 620 ? 0.985 : 0.97),
-          rotate: () => (window.innerWidth <= 620 ? -0.45 : -0.8),
-          borderBottomRightRadius: () => (window.innerWidth <= 620 ? 24 : 48),
-          autoAlpha: 0.16,
-          duration: 1.08,
+          xPercent: -108,
+          yPercent: -108,
+          scale: 0.92,
+          rotate: -3,
+          borderBottomRightRadius: 64,
+          autoAlpha: 0.04,
+          duration: 6.8,
           ease: "power3.inOut",
         });
 
@@ -761,16 +811,18 @@ export function App() {
       gsap.set(".principles-summary", { y: 18, autoAlpha: 0 });
       gsap.set(testimonialsTrack, { y: 46, autoAlpha: 0 });
 
-      const principlesTl = gsap.timeline({
-        scrollTrigger: {
+      const principlesTl = gsap.timeline({ paused: true });
+      createCinematicScrollDriver(
+        principlesTl,
+        {
           trigger: ".clients-section",
           start: "top top",
           end: "bottom bottom",
-          scrub: 0.65,
           refreshPriority: -3,
           invalidateOnRefresh: true,
         },
-      });
+        0.32,
+      );
 
       principlesTl
         .to(principleLines, {
@@ -1110,6 +1162,7 @@ export function App() {
     return () => {
       cancelled = true;
       workScrollRef.current = null;
+      cinematicControllers.forEach((controller) => controller.kill());
       if (ScrollTrigger && syncProcessPaths) {
         ScrollTrigger.removeEventListener("refreshInit", syncProcessPaths);
       }
