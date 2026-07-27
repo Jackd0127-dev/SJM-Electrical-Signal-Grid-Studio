@@ -279,7 +279,7 @@ export function App() {
   useLayoutEffect(() => {
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const mobilePerformanceMode = window.matchMedia("(max-width: 620px)").matches;
-    if (reduceMotion) return undefined;
+    if (reduceMotion || mobilePerformanceMode) return undefined;
 
     document.body.classList.add("hero-intro-running");
     let syncProcessPaths;
@@ -413,8 +413,6 @@ export function App() {
           scrollTrigger: { trigger: line, start: "top 88%" },
         });
       });
-
-      if (mobilePerformanceMode) return;
 
       const approachWords = gsap.utils.toArray(".approach-word");
       const approachGuides = gsap.utils.toArray(".approach-title-guide span");

@@ -2313,8 +2313,20 @@ a:focus-visible {
 
 @media (max-width: 620px) {
   .site-header {
-    min-height: 66px;
-    padding: 10px 14px;
+    min-height: calc(66px + env(safe-area-inset-top));
+    padding:
+      calc(10px + env(safe-area-inset-top))
+      max(14px, env(safe-area-inset-right))
+      10px
+      max(14px, env(safe-area-inset-left));
+  }
+
+  .mobile-menu {
+    padding:
+      calc(106px + env(safe-area-inset-top))
+      max(24px, env(safe-area-inset-right))
+      max(28px, env(safe-area-inset-bottom))
+      max(24px, env(safe-area-inset-left));
   }
 
   .menu-button {
@@ -2369,7 +2381,7 @@ a:focus-visible {
   }
 
   .hero {
-    padding-top: 66px;
+    padding-top: calc(66px + env(safe-area-inset-top));
   }
 
   .hero-grid {
@@ -2388,6 +2400,8 @@ a:focus-visible {
     background:
       linear-gradient(180deg, rgba(116, 109, 104, 0.2) 0%, rgba(116, 109, 104, 0.04) 34%),
       linear-gradient(0deg, rgba(52, 48, 45, 0.78) 0%, rgba(52, 48, 45, 0) 58%);
+    opacity: 1 !important;
+    transform: none !important;
   }
 
   .eyebrow {
@@ -2435,6 +2449,8 @@ a:focus-visible {
     bottom: -6px;
     left: -48%;
     width: 190%;
+    opacity: 1 !important;
+    transform: none !important;
   }
 
   .hero-stats {
@@ -2443,6 +2459,8 @@ a:focus-visible {
     gap: 10px;
     margin-top: 34px;
     padding: 12px 18px;
+    opacity: 1 !important;
+    transform: none !important;
   }
 
   .hero-stat {
@@ -2470,6 +2488,8 @@ a:focus-visible {
     order: 4;
     min-height: 150px;
     border: 0;
+    opacity: 1 !important;
+    transform: none !important;
   }
 
   .hero-word span {
@@ -2479,6 +2499,8 @@ a:focus-visible {
 
   .trusted-strip {
     grid-template-columns: repeat(2, 1fr);
+    opacity: 1 !important;
+    transform: none !important;
   }
 
   .work-pin {
