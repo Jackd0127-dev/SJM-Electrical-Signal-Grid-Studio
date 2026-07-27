@@ -2555,51 +2555,58 @@ a:focus-visible {
   .clients-section,
   .faq-section {
     padding: 72px 18px;
+    content-visibility: auto;
+    contain-intrinsic-size: auto 1100px;
   }
 
   .about-section {
-    height: calc(100vh + 2200px);
+    height: auto;
     min-height: 0;
     padding: 0;
   }
 
   .approach-sticky {
-    padding: 0 18px 60px;
+    position: relative;
+    top: auto;
+    height: auto;
+    min-height: 0;
+    overflow: hidden;
+    padding: 0 18px 62px;
+  }
+
+  .approach-title-stage {
+    position: relative;
+    inset: auto;
+    height: auto;
+    padding-top: 82px;
   }
 
   .approach-words {
+    position: relative;
+    inset: auto;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0 0.2em;
+    text-align: center;
     font-size: clamp(3rem, 13vw, 4.8rem);
   }
 
-  .approach-word:nth-child(1),
-  .approach-word:nth-child(2) {
-    top: 92px;
-  }
-
-  .approach-word:nth-child(1),
-  .approach-word:nth-child(3) {
-    left: 18px;
-  }
-
-  .approach-word:nth-child(2),
-  .approach-word:nth-child(4) {
-    right: 18px;
-  }
-
-  .approach-word:nth-child(3),
-  .approach-word:nth-child(4) {
-    bottom: 92px;
+  .approach-word,
+  .approach-word:nth-child(n) {
+    position: static;
+    transform: none !important;
+    opacity: 1 !important;
+    visibility: visible !important;
   }
 
   .approach-title-guide {
-    top: 86px;
-    gap: 0.2em;
-    font-size: 6.2vw;
+    display: none;
   }
 
   .approach-content {
     min-height: 850px;
-    padding-top: 178px;
+    padding-top: 30px;
   }
 
   .approach-content > .outline-button {
@@ -2636,6 +2643,10 @@ a:focus-visible {
     top: 510px;
     width: calc(100vw - 36px);
     height: 220px;
+  }
+
+  .process-lines {
+    display: none;
   }
 
   .process-node {
@@ -2825,20 +2836,47 @@ a:focus-visible {
   }
 
   .clients-section {
-    height: calc(100vh + 2400px);
-    padding: 0;
+    height: auto;
+    min-height: 0;
+    padding: 82px 18px 72px;
+  }
+
+  .clients-sticky {
+    position: relative;
+    top: auto;
+    height: auto;
+    min-height: 0;
+    overflow: visible;
   }
 
   .clients-heading {
-    top: 78px;
-    left: 0;
+    position: relative;
+    top: auto;
+    left: auto;
     width: 100%;
-    padding: 0 18px;
+    padding: 0;
+    transform: none !important;
+    opacity: 1 !important;
+    visibility: visible !important;
   }
 
   .principles-title {
+    flex-wrap: wrap;
     gap: 0.16em;
     font-size: clamp(1.75rem, 8.7vw, 2.35rem);
+    white-space: normal;
+  }
+
+  .principles-line > span,
+  .principles-work-underline,
+  .principles-summary {
+    transform: none !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+  }
+
+  .principles-work-underline {
+    scale: 1;
   }
 
   .clients-heading > p.principles-summary {
@@ -2849,20 +2887,31 @@ a:focus-visible {
   }
 
   .testimonials {
-    top: 270px;
-    left: 18px;
+    position: relative;
+    top: auto;
+    left: auto;
+    right: auto;
+    margin-top: 34px;
+    overflow: visible;
   }
 
   .testimonials-track {
-    gap: 10px;
-    padding-right: 18px;
+    display: grid;
+    gap: 12px;
+    width: 100%;
+    padding: 0;
+    transform: none !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    will-change: auto;
   }
 
   .testimonial-card {
-    flex-basis: 82vw;
-    min-height: 440px;
+    width: 100%;
+    min-height: 310px;
     border-radius: 15px;
     padding: 22px;
+    transform: none !important;
   }
 
   .testimonial-card blockquote {
@@ -2883,20 +2932,28 @@ a:focus-visible {
   }
 
   .site-footer {
-    min-height: 200svh;
+    min-height: 0;
     padding: 0;
+    content-visibility: auto;
+    contain-intrinsic-size: auto 1500px;
   }
 
   .footer-hero {
-    min-height: 100svh;
+    position: relative;
+    top: auto;
+    min-height: auto;
     align-content: center;
     gap: 18px;
-    padding: 78px 18px 30px;
+    padding: 82px 18px 54px;
+    transform: none !important;
+    will-change: auto;
   }
 
   .footer-underlay {
-    min-height: 100svh;
-    margin-top: -100svh;
+    position: relative;
+    top: auto;
+    min-height: auto;
+    margin-top: 0;
     padding: 28px 0 18px;
   }
 
