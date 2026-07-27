@@ -1,6 +1,4 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { scrollToBounded, useBoundedScroll } from "./useBoundedScroll.js";
 import {
   ArrowDown,
@@ -21,8 +19,6 @@ import {
   Wrench,
   X,
 } from "@phosphor-icons/react";
-
-gsap.registerPlugin(ScrollTrigger);
 
 const A = "./assets/sjm";
 const DEMO_EMAIL = "hello@sjm-electrical.example";
@@ -245,6 +241,10 @@ export function App() {
   const [activeSection, setActiveSection] = useState("home");
   const [projectIndex, setProjectIndex] = useState(0);
   const [formSubmitted, setFormSubmitted] = useState(false);
+  const mobileLayoutRef = useRef(window.matchMedia("(max-width: 620px)").matches);
+  const visibleApproachImages = mobileLayoutRef.current
+    ? [approachImages[0], approachImages[2], approachImages[5]]
+    : approachImages;
 
   useBoundedScroll();
 
@@ -281,11 +281,24 @@ export function App() {
     const mobilePerformanceMode = window.matchMedia("(max-width: 620px)").matches;
     if (reduceMotion || mobilePerformanceMode) return undefined;
 
-    document.body.classList.add("hero-intro-running");
+    let cancelled = false;
+    let ctx;
+    let ScrollTrigger;
     let syncProcessPaths;
     let measureProjectPositions;
 
-    const ctx = gsap.context(() => {
+    const initialiseDesktopAnimations = async () => {
+      const [{ default: gsap }, scrollTriggerModule] = await Promise.all([
+        import("gsap"),
+        import("gsap/ScrollTrigger"),
+      ]);
+      if (cancelled) return;
+
+      ScrollTrigger = scrollTriggerModule.ScrollTrigger;
+      gsap.registerPlugin(ScrollTrigger);
+      document.body.classList.add("hero-intro-running");
+
+      ctx = gsap.context(() => {
       const heading = document.querySelector(".hero-copy h1");
       const headingLines = gsap.utils.toArray(".hero-reveal");
       const copyDetails = gsap.utils.toArray(
@@ -1055,18 +1068,22 @@ export function App() {
           );
         workScrollRef.current = tween.scrollTrigger;
       }
-    }, rootRef);
+      }, rootRef);
+    };
+
+    void initialiseDesktopAnimations();
 
     return () => {
+      cancelled = true;
       workScrollRef.current = null;
-      if (syncProcessPaths) {
+      if (ScrollTrigger && syncProcessPaths) {
         ScrollTrigger.removeEventListener("refreshInit", syncProcessPaths);
       }
-      if (measureProjectPositions) {
+      if (ScrollTrigger && measureProjectPositions) {
         ScrollTrigger.removeEventListener("refreshInit", measureProjectPositions);
       }
       document.body.classList.remove("hero-intro-running");
-      ctx.revert();
+      ctx?.revert();
     };
   }, []);
 
@@ -1343,7 +1360,7 @@ export function App() {
 
             <div className="approach-content">
               <div className="approach-image-stack" aria-label="A selection of SJM Electrical portfolio work">
-                {approachImages.map((image, index) => (
+                {visibleApproachImages.map((image, index) => (
                   <figure className="approach-image-slot" key={`${image.src}-${index}`}>
                     <div className={`approach-image-card${image.team ? " approach-image-card--team" : ""}`}>
                       <img

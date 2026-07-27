@@ -2577,8 +2577,6 @@ a:focus-visible {
   .clients-section,
   .faq-section {
     padding: 72px 18px;
-    content-visibility: auto;
-    contain-intrinsic-size: auto 1100px;
   }
 
   .about-section {
@@ -2646,19 +2644,17 @@ a:focus-visible {
   }
 
   .approach-image-slot {
-    width: 170px;
+    width: 190px;
   }
 
-  .approach-image-slot:nth-child(1) { --stack-x: -134px; --stack-y: 24px; }
-  .approach-image-slot:nth-child(2) { --stack-x: -82px; --stack-y: 6px; }
-  .approach-image-slot:nth-child(3) { --stack-x: -28px; --stack-y: 20px; }
-  .approach-image-slot:nth-child(4) { --stack-x: 28px; --stack-y: 0; }
-  .approach-image-slot:nth-child(5) { --stack-x: 82px; --stack-y: 18px; }
-  .approach-image-slot:nth-child(6) { --stack-x: 134px; --stack-y: 7px; }
+  .approach-image-slot:nth-child(1) { --stack-x: -105px; --stack-y: 24px; }
+  .approach-image-slot:nth-child(2) { --stack-x: 0px; --stack-y: 2px; }
+  .approach-image-slot:nth-child(3) { --stack-x: 105px; --stack-y: 20px; }
 
   .approach-image-card {
     border-radius: 15px;
-    box-shadow: 0 10px 24px rgba(16, 16, 15, 0.12);
+    box-shadow: none;
+    will-change: auto;
   }
 
   .process-flow {
@@ -2956,8 +2952,6 @@ a:focus-visible {
   .site-footer {
     min-height: 0;
     padding: 0;
-    content-visibility: auto;
-    contain-intrinsic-size: auto 1500px;
   }
 
   .footer-hero {
@@ -3001,6 +2995,7 @@ a:focus-visible {
   .footer-contact-form {
     border-radius: 20px;
     padding: 10px;
+    backdrop-filter: none;
   }
 
   .contact-form-grid {
@@ -3068,7 +3063,7 @@ a:focus-visible {
 
 @media (pointer: coarse) {
   html {
-    scroll-behavior: smooth;
+    scroll-behavior: auto;
   }
 }
 
