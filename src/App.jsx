@@ -24,7 +24,7 @@ import {
 
 gsap.registerPlugin(ScrollTrigger);
 
-const A = "/assets/sjm";
+const A = "./assets/sjm";
 const DEMO_EMAIL = "hello@sjm-electrical.example";
 const DEMO_PHONE_DISPLAY = "01632 960 123";
 const DEMO_PHONE_LINK = "+441632960123";
