@@ -2303,6 +2303,26 @@ a:focus-visible {
     padding: 10px 14px;
   }
 
+  .menu-button {
+    grid-column: 3;
+    justify-self: end;
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    padding: 0;
+    background: transparent !important;
+    color: var(--ink);
+    appearance: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .menu-button:hover,
+  .menu-button:active,
+  .menu-button:focus {
+    background: transparent !important;
+    color: var(--ink);
+  }
+
   .site-header > .arrow-link {
     display: none;
   }
@@ -2381,6 +2401,11 @@ a:focus-visible {
     color: white;
   }
 
+  .hero-actions {
+    justify-content: center;
+    width: 100%;
+  }
+
   .hero-portrait {
     position: absolute;
     z-index: 1;
@@ -2402,13 +2427,16 @@ a:focus-visible {
     order: 3;
     grid-template-columns: repeat(2, 1fr);
     gap: 10px;
-    padding: 12px;
+    margin-top: 34px;
+    padding: 12px 18px;
   }
 
   .hero-stat {
+    align-items: center;
     min-height: 170px;
     padding: 18px;
     background: rgba(255, 255, 255, 0.25);
+    text-align: center;
   }
 
   .hero-stat span,
@@ -2617,67 +2645,94 @@ a:focus-visible {
   .process-node--5 { top: 102px; }
 
   .services-section {
-    height: calc(100vh + 2200px);
+    height: auto;
     padding: 0;
+    background: #151514;
+  }
+
+  .services-sticky {
+    position: relative;
+    top: auto;
+    height: auto;
+    min-height: 0;
+    overflow: visible;
   }
 
   .services-scene {
-    padding: 0 18px 24px;
+    position: relative;
+    inset: auto;
+    overflow: visible;
+    padding: 82px 18px 72px;
+    transform: none !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+  }
+
+  .services-next-reveal {
+    display: none;
+  }
+
+  .services-title-stage {
+    position: relative;
+    inset: auto;
+  }
+
+  .services-words {
+    position: relative;
+    inset: auto;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0 0.2em;
+    margin: 0 auto;
+    text-align: center;
   }
 
   .services-words {
     font-size: clamp(3rem, 12vw, 4.5rem);
   }
 
-  .services-word:nth-child(1) { top: 94px; }
-  .services-word:nth-child(2) { top: 188px; }
-  .services-word:nth-child(3) { bottom: 188px; }
-  .services-word:nth-child(4) { bottom: 92px; }
-
-  .services-word:nth-child(1),
-  .services-word:nth-child(3) {
-    left: 18px;
-  }
-
-  .services-word:nth-child(2),
-  .services-word:nth-child(4) {
-    right: 18px;
+  .services-word,
+  .services-word:nth-child(n) {
+    position: static;
+    transform: none !important;
+    opacity: 1 !important;
+    visibility: visible !important;
   }
 
   .services-title-guide {
-    top: 96px;
-    right: auto;
-    left: 50%;
-    width: 340px;
-    flex-wrap: wrap;
-    gap: 0.18em;
-    font-size: 7.7vw;
-    line-height: 0.86;
-    transform: translateX(-50%);
+    display: none;
   }
 
   .services-content {
-    padding-top: 184px;
+    height: auto;
+    padding-top: 28px;
   }
 
   .services-summary {
     margin-bottom: 20px;
     font-size: 0.68rem;
+    transform: none !important;
+    opacity: 1 !important;
+    visibility: visible !important;
   }
 
   .services-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 10px;
+    grid-template-columns: 1fr;
+    gap: 12px;
   }
 
   .service-card {
-    min-height: 132px;
-    padding: 10px;
+    min-height: 176px;
+    padding: 18px;
+    transform: none !important;
+    opacity: 1 !important;
+    visibility: visible !important;
   }
 
   .service-card:nth-child(5) {
-    grid-column: 1 / -1;
-    min-height: 100px;
+    grid-column: auto;
+    min-height: 176px;
   }
 
   .service-card > svg:not(.service-arrow) {
@@ -2701,7 +2756,10 @@ a:focus-visible {
   }
 
   .services-cta {
-    margin-top: 12px;
+    margin-top: 24px;
+    transform: none !important;
+    opacity: 1 !important;
+    visibility: visible !important;
   }
 
   .services-cta .arrow-link {
@@ -2718,12 +2776,18 @@ a:focus-visible {
     margin-top: 8px;
     margin-right: 58px;
     margin-left: 0;
+    transform: none !important;
+    opacity: 1 !important;
+    visibility: visible !important;
   }
 
   .service-contact-pill {
     gap: 6px;
     min-height: 52px;
     padding: 4px 7px 4px 4px;
+    transform: none !important;
+    opacity: 1 !important;
+    visibility: visible !important;
   }
 
   .service-contact-pill__icon {

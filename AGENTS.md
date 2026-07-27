@@ -18,3 +18,4 @@ Build app UI in `src/`. Keep `.openai/hosting.json`, `worker/index.js`, `scripts
 - Keep the portfolio disclosure, `noindex, nofollow`, illustrative `.example` contact address, and non-submitting contact behaviour until real business details and claims are supplied and authorised.
 - Do not overwrite `/Users/jackd/Desktop/Recreating Website Templates/Nesh/NESH-Signal-Grid-Studio` or `/Users/jackd/Desktop/Novas-Trade-Sites/Template-NESH`.
 - On mobile, compose the team photography behind the hero copy, keep the two proof statistics followed by the SJM wordmark, omit the five working-value bullets, and drive the centred project-card rail from vertical scrolling before releasing into the next section.
+- Keep the mobile menu control pinned to the header's top-right cell without a stretched tap/focus background; centre the hero CTAs and proof cards, and present Services as a natural single-column page flow rather than a pinned horizontal animation.
