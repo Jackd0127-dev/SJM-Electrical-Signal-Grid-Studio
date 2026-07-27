@@ -852,6 +852,10 @@ a:focus-visible {
   gap: 8px;
 }
 
+.drag-line__mobile {
+  display: none !important;
+}
+
 .about-section {
   position: relative;
   height: calc(100vh + 2600px);
@@ -2171,17 +2175,18 @@ a:focus-visible {
   }
 
   .project-viewport {
-    overflow: hidden;
+    overflow: visible;
     cursor: auto;
-    touch-action: pan-x pan-y;
+    touch-action: pan-y;
   }
 
   .project-track {
-    width: auto;
+    flex-direction: column;
+    width: 100%;
     padding: 0 18px;
     overflow: visible;
     scrollbar-width: none;
-    will-change: transform;
+    transform: none !important;
   }
 
   .project-track::-webkit-scrollbar {
@@ -2189,17 +2194,26 @@ a:focus-visible {
   }
 
   .project-card {
-    flex: 0 0 82vw;
-    width: 82vw;
+    flex: 0 0 auto;
+    width: 100%;
     min-width: 0;
     height: 68vh;
     min-height: 520px;
-    scroll-snap-align: start;
+    scroll-snap-align: none;
   }
 
   .drag-line {
     width: 100vw;
-    padding: 18px 18px 0;
+    order: -1;
+    padding: 0 18px 18px;
+  }
+
+  .drag-line__desktop {
+    display: none !important;
+  }
+
+  .drag-line__mobile {
+    display: inline-flex !important;
   }
 
   .about-section {
@@ -2472,6 +2486,11 @@ a:focus-visible {
     padding: 82px 0 32px;
   }
 
+  .project-viewport {
+    display: flex;
+    flex-direction: column;
+  }
+
   .work-sidebar {
     padding-bottom: 34px;
   }
@@ -2503,11 +2522,9 @@ a:focus-visible {
   }
 
   .project-card {
-    flex-basis: calc(100vw - 36px);
     width: calc(100vw - 36px);
     height: min(66vh, 590px);
     min-height: 510px;
-    scroll-snap-align: center;
   }
 
   .project-copy {
@@ -2772,10 +2789,9 @@ a:focus-visible {
   .services-contact-row {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1.04fr);
     gap: 8px;
-    width: calc(100% - 58px);
-    margin-top: 8px;
-    margin-right: 58px;
-    margin-left: 0;
+    width: 100%;
+    max-width: 354px;
+    margin: 10px auto 0;
     transform: none !important;
     opacity: 1 !important;
     visibility: visible !important;

@@ -1053,33 +1053,6 @@ export function App() {
             1.035,
           );
         workScrollRef.current = tween.scrollTrigger;
-      } else if (trackRef.current && workRef.current) {
-        const projectViewport = workRef.current.querySelector(".project-viewport");
-        const getMobileProjectDistance = () =>
-          Math.max(0, trackRef.current.scrollWidth - projectViewport.clientWidth);
-
-        const mobileProjectTween = gsap.to(trackRef.current, {
-          x: () => -getMobileProjectDistance(),
-          ease: "none",
-          scrollTrigger: {
-            id: "projectsTrackMobile",
-            trigger: workRef.current,
-            start: "top top",
-            end: () => `+=${getMobileProjectDistance()}`,
-            pin: true,
-            scrub: 0.48,
-            invalidateOnRefresh: true,
-            onUpdate: (self) => {
-              updateProjectIndex(
-                Math.min(
-                  projects.length - 1,
-                  Math.round(self.progress * (projects.length - 1)),
-                ),
-              );
-            },
-          },
-        });
-        workScrollRef.current = mobileProjectTween.scrollTrigger;
       }
     }, rootRef);
 
@@ -1343,7 +1316,12 @@ export function App() {
                 ))}
               </div>
               <div className="drag-line" aria-hidden="true">
-                <span><HandGrabbing weight="bold" /> Drag to explore concepts</span>
+                <span className="drag-line__desktop">
+                  <HandGrabbing weight="bold" /> Drag to explore concepts
+                </span>
+                <span className="drag-line__mobile">
+                  <HandGrabbing weight="bold" /> Scroll to explore concepts
+                </span>
               </div>
             </div>
           </div>
