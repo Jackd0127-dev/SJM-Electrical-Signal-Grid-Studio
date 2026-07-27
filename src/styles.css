@@ -2400,19 +2400,22 @@ a:focus-visible {
   .hero-copy {
     z-index: 3;
     justify-content: flex-start;
-    min-height: 690px;
-    padding: 24px 18px 30px;
+    min-height: max(590px, calc(100svh - 66px - env(safe-area-inset-top)));
+    padding:
+      26px
+      max(18px, env(safe-area-inset-right))
+      max(86px, calc(72px + env(safe-area-inset-bottom)))
+      max(18px, env(safe-area-inset-left));
     border-bottom: 1px solid var(--line);
     background:
-      linear-gradient(180deg, rgba(116, 109, 104, 0.2) 0%, rgba(116, 109, 104, 0.04) 34%),
-      linear-gradient(0deg, rgba(52, 48, 45, 0.78) 0%, rgba(52, 48, 45, 0) 58%);
+      linear-gradient(180deg, rgba(38, 35, 33, 0.58) 0%, rgba(38, 35, 33, 0.12) 28%, transparent 46%),
+      linear-gradient(0deg, rgba(38, 35, 33, 0.88) 0%, rgba(38, 35, 33, 0.22) 38%, transparent 60%);
     opacity: 1 !important;
     transform: none !important;
   }
 
   .eyebrow {
-    margin: 0 auto 62px 0;
-    font-size: 0.78rem;
+    display: none;
   }
 
   .hero-copy__rule {
@@ -2420,14 +2423,30 @@ a:focus-visible {
   }
 
   .hero-copy h1 {
-    font-size: clamp(3.25rem, 14.3vw, 4.55rem);
+    display: flex;
+    align-items: baseline;
+    gap: 0.2em;
+    width: 100%;
+    color: white;
+    font-size: clamp(1.38rem, 6.4vw, 1.75rem);
+    line-height: 1;
+    letter-spacing: -0.045em;
+    white-space: nowrap;
+  }
+
+  .hero-copy h1 .line-mask,
+  .hero-copy h1 span {
+    display: inline-block;
+    overflow: visible;
   }
 
   .hero-intro {
-    max-width: 340px;
-    margin: 17px 0;
-    color: rgba(255, 255, 255, 0.78);
-    font-size: 0.8rem;
+    max-width: 350px;
+    margin: 12px 0 0;
+    color: rgba(255, 255, 255, 0.96);
+    font-size: 0.9rem;
+    line-height: 1.42;
+    text-shadow: 0 1px 10px rgba(16, 16, 15, 0.3);
   }
 
   .outline-button {
@@ -2436,8 +2455,26 @@ a:focus-visible {
   }
 
   .hero-actions {
-    justify-content: center;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: stretch;
+    gap: 8px;
     width: 100%;
+    margin-top: auto;
+  }
+
+  .hero-actions .arrow-link,
+  .hero-actions .outline-button {
+    min-width: 0;
+    min-height: 56px;
+    gap: 10px;
+    padding: 0 13px;
+    font-size: 0.82rem;
+  }
+
+  .hero-actions .outline-button {
+    border-color: rgba(255, 255, 255, 0.72);
+    background: rgba(30, 30, 29, 0.78);
   }
 
   .hero-portrait {
@@ -2445,7 +2482,7 @@ a:focus-visible {
     z-index: 1;
     inset: 0 0 auto;
     width: 100%;
-    min-height: 690px;
+    min-height: max(590px, calc(100svh - 66px - env(safe-area-inset-top)));
     overflow: hidden;
     border: 0;
     pointer-events: none;
@@ -2612,7 +2649,7 @@ a:focus-visible {
     height: auto;
     min-height: 0;
     overflow: hidden;
-    padding: 0 18px 62px;
+    padding: 0 18px 34px;
   }
 
   .approach-title-stage {
@@ -2646,8 +2683,8 @@ a:focus-visible {
   }
 
   .approach-content {
-    min-height: 850px;
-    padding-top: 30px;
+    min-height: 500px;
+    padding-top: 0;
   }
 
   .approach-content > .outline-button {
@@ -2660,8 +2697,8 @@ a:focus-visible {
   }
 
   .approach-image-stack {
-    top: 198px;
-    height: 300px;
+    top: 28px;
+    height: 270px;
   }
 
   .approach-image-slot {
@@ -2679,9 +2716,9 @@ a:focus-visible {
   }
 
   .process-flow {
-    top: 510px;
+    top: 312px;
     width: calc(100vw - 36px);
-    height: 220px;
+    height: 170px;
   }
 
   .process-lines {
@@ -3034,6 +3071,12 @@ a:focus-visible {
 
   .contact-form-field textarea {
     min-height: 42px;
+  }
+
+  .contact-form-field input,
+  .contact-form-field textarea {
+    font-size: 16px;
+    line-height: 1.25;
   }
 
   .contact-form-actions {

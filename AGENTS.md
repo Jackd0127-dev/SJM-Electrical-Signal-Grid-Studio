@@ -27,3 +27,6 @@ Build app UI in `src/`. Keep `.openai/hosting.json`, `worker/index.js`, `scripts
 - Keep the desktop navigation in document order: Home, Projects, Approach, Services, Principles, numbered 01–05.
 - Begin the desktop Approach title while the section is entering after Projects, and cap the progress velocity of the Approach, Services, and Principles timelines so fast wheel or trackpad input still resolves cinematically.
 - Exit the desktop Services scene completely through the top-left corner, revealing Principles beneath it as a full diagonal transition.
+- On mobile, keep “Electrical, made clear.” on one compact line below the safe-area header, place its supporting copy directly underneath, and anchor the two high-contrast hero actions near the bottom of the team image.
+- Keep the mobile Approach stack compact: title, cards, five process nodes, and the following section should read as one continuous composition without large reserved gaps.
+- Keep every mobile contact input and textarea at a computed font size of at least 16px so iOS Safari does not zoom the page when a field receives focus.
