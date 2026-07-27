@@ -248,6 +248,40 @@ export function App() {
 
   useBoundedScroll();
 
+  useEffect(() => {
+    if (!mobileLayoutRef.current) return undefined;
+
+    const sources = [
+      ...projects.map((project) => project.image),
+      ...visibleApproachImages.map((image) => image.src),
+    ];
+    const uniqueSources = [...new Set(sources)];
+    let cancelled = false;
+
+    const decodeImages = () => {
+      if (cancelled) return;
+      uniqueSources.forEach((source) => {
+        const image = new Image();
+        image.decoding = "async";
+        image.src = source;
+        image.decode?.().catch(() => undefined);
+      });
+    };
+
+    const idleId = "requestIdleCallback" in window
+      ? window.requestIdleCallback(decodeImages, { timeout: 1200 })
+      : window.setTimeout(decodeImages, 250);
+
+    return () => {
+      cancelled = true;
+      if ("cancelIdleCallback" in window) {
+        window.cancelIdleCallback(idleId);
+      } else {
+        window.clearTimeout(idleId);
+      }
+    };
+  }, []);
+
   const updateProjectIndex = (next) => {
     if (projectIndexRef.current === next) return;
     projectIndexRef.current = next;

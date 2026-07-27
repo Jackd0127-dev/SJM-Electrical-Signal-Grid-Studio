@@ -2319,6 +2319,9 @@ a:focus-visible {
       max(14px, env(safe-area-inset-right))
       10px
       max(14px, env(safe-area-inset-left));
+    contain: layout paint;
+    backface-visibility: hidden;
+    transform: translateZ(0);
   }
 
   .mobile-menu {
@@ -2360,6 +2363,9 @@ a:focus-visible {
     min-height: 52px;
     justify-content: center;
     padding: 0;
+    contain: layout paint;
+    backface-visibility: hidden;
+    transform: translateZ(0);
   }
 
   .floating-whatsapp span {
@@ -2547,6 +2553,21 @@ a:focus-visible {
     width: calc(100vw - 36px);
     height: min(66vh, 590px);
     min-height: 510px;
+  }
+
+  .project-media,
+  .service-card,
+  .testimonial-card {
+    contain: paint;
+    will-change: auto;
+  }
+
+  .project-media img,
+  .service-card,
+  .testimonial-card,
+  .arrow-link,
+  .outline-button {
+    transition: none;
   }
 
   .project-copy {
