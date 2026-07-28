@@ -238,6 +238,7 @@ export function App() {
   const workScrollRef = useRef(null);
   const projectDragRef = useRef({ active: false, startX: 0, startScroll: 0 });
   const projectIndexRef = useRef(0);
+  const cinematicNavigationRef = useRef(new Map());
   const [menuOpen, setMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("home");
   const [projectIndex, setProjectIndex] = useState(0);
@@ -248,6 +249,19 @@ export function App() {
     : approachImages;
 
   useBoundedScroll();
+
+  const scrollToSection = (id) => {
+    const element = document.getElementById(id);
+    if (!element) return;
+
+    const landing = cinematicNavigationRef.current.get(id)?.();
+    if (landing) {
+      scrollToBounded(landing.top, landing.release);
+      return;
+    }
+
+    scrollToBounded(element.getBoundingClientRect().top + window.scrollY);
+  };
 
   useEffect(() => {
     if (!mobileLayoutRef.current) return undefined;
@@ -340,7 +354,7 @@ export function App() {
         scrollTriggerConfig,
         maxProgressPerSecond = 0.36,
       ) => {
-        const state = { current: 0, target: 0 };
+        const state = { current: 0, target: 0, navigationProgress: null };
         const configuredUpdate = scrollTriggerConfig.onUpdate;
         timeline.pause(0);
 
@@ -365,12 +379,33 @@ export function App() {
           ...scrollTriggerConfig,
           scrub: false,
           onUpdate: (self) => {
-            state.target = self.progress;
+            if (state.navigationProgress === null) {
+              state.target = self.progress;
+            }
             configuredUpdate?.(self);
           },
         });
 
         const controller = {
+          navigationLanding: (progress) => {
+            const landingProgress = gsap.utils.clamp(0, 1, progress);
+            state.navigationProgress = landingProgress;
+            state.current = landingProgress;
+            state.target = landingProgress;
+            timeline.progress(landingProgress);
+
+            return {
+              top:
+                scrollTrigger.start +
+                (scrollTrigger.end - scrollTrigger.start) * landingProgress,
+              release: () => {
+                state.navigationProgress = null;
+                state.current = landingProgress;
+                state.target = scrollTrigger.progress;
+                timeline.progress(landingProgress);
+              },
+            };
+          },
           kill: () => {
             gsap.ticker.remove(tick);
             scrollTrigger.kill();
@@ -587,7 +622,7 @@ export function App() {
       });
 
       const approachTl = gsap.timeline({ paused: true });
-      createCinematicScrollDriver(
+      const approachController = createCinematicScrollDriver(
         approachTl,
         {
           trigger: ".about-section",
@@ -665,6 +700,11 @@ export function App() {
             ease: "power2.out",
           });
       });
+      approachTl.addLabel("navigationComplete");
+      cinematicNavigationRef.current.set("about", () =>
+        approachController.navigationLanding(
+          approachTl.labels.navigationComplete / approachTl.duration(),
+        ));
 
       const serviceWords = gsap.utils.toArray(".services-word");
       const serviceGuides = gsap.utils.toArray(".services-title-guide span");
@@ -689,7 +729,7 @@ export function App() {
       });
 
       const servicesTl = gsap.timeline({ paused: true });
-      createCinematicScrollDriver(
+      const servicesController = createCinematicScrollDriver(
         servicesTl,
         {
           trigger: ".services-section",
@@ -769,6 +809,7 @@ export function App() {
           stagger: 0.11,
           ease: "back.out(1.55)",
         }, "-=0.2")
+        .addLabel("navigationComplete")
         .to({}, { duration: 0.3 })
         .to(".services-scene", {
           xPercent: -108,
@@ -780,6 +821,10 @@ export function App() {
           duration: 6.8,
           ease: "power3.inOut",
         });
+      cinematicNavigationRef.current.set("services", () =>
+        servicesController.navigationLanding(
+          servicesTl.labels.navigationComplete / servicesTl.duration(),
+        ));
 
       const principleLines = gsap.utils.toArray(".principles-line > span");
       const testimonialsTrack = document.querySelector(".testimonials-track");
@@ -813,7 +858,7 @@ export function App() {
       gsap.set(testimonialsTrack, { y: 46, autoAlpha: 0 });
 
       const principlesTl = gsap.timeline({ paused: true });
-      createCinematicScrollDriver(
+      const principlesController = createCinematicScrollDriver(
         principlesTl,
         {
           trigger: ".clients-section",
@@ -851,6 +896,7 @@ export function App() {
           duration: 0.5,
           ease: "power3.out",
         })
+        .addLabel("navigationComplete")
         .to(testimonialsTrack, {
           x: () => -getTestimonialsDistance(),
           duration: 4.2,
@@ -878,6 +924,10 @@ export function App() {
           stagger: 0.025,
           ease: "power2.out",
         }, "-=0.72");
+      cinematicNavigationRef.current.set("clients", () =>
+        principlesController.navigationLanding(
+          principlesTl.labels.navigationComplete / principlesTl.duration(),
+        ));
 
       const footerTl = gsap.timeline({
         scrollTrigger: {
@@ -1163,6 +1213,7 @@ export function App() {
     return () => {
       cancelled = true;
       workScrollRef.current = null;
+      cinematicNavigationRef.current.clear();
       cinematicControllers.forEach((controller) => controller.kill());
       if (ScrollTrigger && syncProcessPaths) {
         ScrollTrigger.removeEventListener("refreshInit", syncProcessPaths);
@@ -1204,7 +1255,7 @@ export function App() {
             <button
               key={id}
               className={activeSection === id ? "is-active" : ""}
-              onClick={() => scrollToId(id)}
+              onClick={() => scrollToSection(id)}
             >
               <span>{number}</span>
               {label}
@@ -1229,7 +1280,7 @@ export function App() {
               key={id}
               onClick={() => {
                 setMenuOpen(false);
-                window.setTimeout(() => scrollToId(id), 120);
+                window.setTimeout(() => scrollToSection(id), 120);
               }}
             >
               <span>{number}</span>

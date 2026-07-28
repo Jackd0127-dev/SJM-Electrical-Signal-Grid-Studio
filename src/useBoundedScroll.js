@@ -9,9 +9,9 @@ let activeScrollTo = null;
 
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 
-export function scrollToBounded(top) {
+export function scrollToBounded(top, onComplete) {
   if (activeScrollTo) {
-    activeScrollTo(top);
+    activeScrollTo(top, onComplete);
     return;
   }
 
@@ -20,6 +20,13 @@ export function scrollToBounded(top) {
     top,
     behavior: reduceMotion ? "auto" : "smooth",
   });
+  if (onComplete) {
+    if (reduceMotion) {
+      window.requestAnimationFrame(onComplete);
+    } else {
+      window.setTimeout(onComplete, 700);
+    }
+  }
 }
 
 export function useBoundedScroll() {
@@ -32,9 +39,16 @@ export function useBoundedScroll() {
     let target = current;
     let frameId = 0;
     let lastFrame = 0;
+    let completionCallback = null;
 
     const maxScroll = () =>
       Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+
+    const releaseCompletion = () => {
+      const callback = completionCallback;
+      completionCallback = null;
+      callback?.();
+    };
 
     const finish = () => {
       if (frameId) window.cancelAnimationFrame(frameId);
@@ -43,6 +57,7 @@ export function useBoundedScroll() {
       current = window.scrollY;
       target = current;
       document.body.classList.remove("is-scroll-gliding");
+      releaseCompletion();
     };
 
     const frame = (now) => {
@@ -67,6 +82,7 @@ export function useBoundedScroll() {
         window.scrollTo(0, current);
         lastFrame = 0;
         document.body.classList.remove("is-scroll-gliding");
+        releaseCompletion();
       }
     };
 
@@ -76,9 +92,11 @@ export function useBoundedScroll() {
       frameId = window.requestAnimationFrame(frame);
     };
 
-    const scrollTo = (nextTop) => {
+    const scrollTo = (nextTop, onComplete) => {
+      releaseCompletion();
       current = window.scrollY;
       target = clamp(nextTop, 0, maxScroll());
+      completionCallback = onComplete || null;
       start();
     };
 
@@ -97,6 +115,7 @@ export function useBoundedScroll() {
       }
 
       event.preventDefault();
+      releaseCompletion();
 
       if (!frameId) {
         current = window.scrollY;

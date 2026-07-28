@@ -30,3 +30,4 @@ Build app UI in `src/`. Keep `.openai/hosting.json`, `worker/index.js`, `scripts
 - On mobile, keep “Electrical, made clear.” on one compact line below the safe-area header, place its supporting copy directly underneath, and anchor the two high-contrast hero actions near the bottom of the team image.
 - Keep the mobile Approach stack compact: title, cards, five process nodes, and the following section should read as one continuous composition without large reserved gaps.
 - Keep every mobile contact input and textarea at a computed font size of at least 16px so iOS Safari does not zoom the page when a field receives focus.
+- Header navigation to Approach, Services, and Principles should land on each section's completed presentation state; ordinary page scrolling should still play the full cinematic sequence.
