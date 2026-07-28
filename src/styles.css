@@ -913,9 +913,10 @@ a:focus-visible {
   z-index: 2;
   inset: 0;
   background:
-    linear-gradient(125deg, rgba(195, 103, 52, 0.16) 0%, rgba(30, 30, 29, 0.08) 46%, rgba(30, 30, 29, 0.34) 100%),
-    linear-gradient(180deg, rgba(12, 11, 10, 0.56) 0%, rgba(12, 11, 10, 0.27) 35%, rgba(12, 11, 10, 0.62) 100%),
-    linear-gradient(90deg, rgba(12, 11, 10, 0.26), transparent 45%, rgba(12, 11, 10, 0.17));
+    radial-gradient(circle at 18% 48%, rgba(195, 103, 52, 0.46), transparent 48%),
+    linear-gradient(125deg, rgba(195, 103, 52, 0.38) 0%, rgba(87, 52, 34, 0.36) 48%, rgba(30, 30, 29, 0.62) 100%),
+    linear-gradient(180deg, rgba(12, 11, 10, 0.62) 0%, rgba(20, 15, 12, 0.31) 38%, rgba(12, 11, 10, 0.74) 100%),
+    linear-gradient(90deg, rgba(12, 11, 10, 0.42), transparent 44%, rgba(12, 11, 10, 0.31));
   pointer-events: none;
 }
 
@@ -954,14 +955,14 @@ a:focus-visible {
   will-change: transform;
 }
 
-.approach-word:nth-child(1) { top: 118px; left: 5vw; }
-.approach-word:nth-child(2) { top: 118px; right: 5vw; }
-.approach-word:nth-child(3) { bottom: 90px; left: 5vw; }
-.approach-word:nth-child(4) { right: 5vw; bottom: 90px; }
+.approach-word:nth-child(1) { top: 142px; left: 5vw; }
+.approach-word:nth-child(2) { top: 142px; right: 5vw; }
+.approach-word:nth-child(3) { bottom: 66px; left: 5vw; }
+.approach-word:nth-child(4) { right: 5vw; bottom: 66px; }
 
 .approach-title-guide {
   position: absolute;
-  top: 96px;
+  top: 120px;
   left: 0;
   right: 0;
   display: flex;
