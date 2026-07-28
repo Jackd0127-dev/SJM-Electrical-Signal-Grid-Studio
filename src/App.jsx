@@ -830,100 +830,112 @@ export function App() {
       const testimonialsTrack = document.querySelector(".testimonials-track");
       const testimonialsViewport = document.querySelector(".testimonials");
       const lastPrincipleCard = document.querySelector(".testimonial-card:last-child");
-      const lastPrincipleContent = gsap.utils.toArray(
-        ".testimonial-index, .quote-mark, blockquote, .testimonial-card:last-child > div",
-        lastPrincipleCard,
-      );
+      const principlesTakeover = document.querySelector(".principles-takeover");
       const getTestimonialsDistance = () =>
         Math.max(0, testimonialsTrack.scrollWidth - window.innerWidth + 48);
-      const getPrincipleCardScale = () =>
-        Math.max(
-          window.innerWidth / lastPrincipleCard.offsetWidth,
-          window.innerHeight / lastPrincipleCard.offsetHeight,
-        ) * 1.06;
-      const getPrincipleCardX = () => {
+      const getPrincipleTakeoverClip = () => {
         const finalLeft =
           testimonialsViewport.offsetLeft +
           lastPrincipleCard.offsetLeft -
           getTestimonialsDistance();
-        return window.innerWidth / 2 - (finalLeft + lastPrincipleCard.offsetWidth / 2);
-      };
-      const getPrincipleCardY = () => {
         const finalTop = testimonialsViewport.offsetTop + lastPrincipleCard.offsetTop;
-        return window.innerHeight / 2 - (finalTop + lastPrincipleCard.offsetHeight / 2);
+        const right = Math.max(
+          0,
+          window.innerWidth - finalLeft - lastPrincipleCard.offsetWidth,
+        );
+        const bottom = Math.max(
+          0,
+          window.innerHeight - finalTop - lastPrincipleCard.offsetHeight,
+        );
+        return `inset(${Math.max(0, finalTop)}px ${right}px ${bottom}px ${Math.max(
+          0,
+          finalLeft,
+        )}px round 18px)`;
       };
-      gsap.set(principleLines, { yPercent: 118, rotate: 2, autoAlpha: 0 });
+      gsap.set(principleLines, {
+        y: 28,
+        autoAlpha: 0,
+        force3D: true,
+      });
       gsap.set(".principles-work-underline", { scaleX: 0 });
       gsap.set(".principles-summary", { y: 18, autoAlpha: 0 });
-      gsap.set(testimonialsTrack, { y: 46, autoAlpha: 0 });
+      gsap.set(testimonialsTrack, {
+        x: 0,
+        y: 30,
+        autoAlpha: 0,
+        force3D: true,
+      });
+      gsap.set(principlesTakeover, {
+        autoAlpha: 0,
+        clipPath: getPrincipleTakeoverClip,
+      });
 
       const principlesTl = gsap.timeline({ paused: true });
       const principlesController = createCinematicScrollDriver(
         principlesTl,
         {
           trigger: ".clients-section",
-          start: "top top",
+          start: "top 55%",
           end: "bottom bottom",
           refreshPriority: -3,
           invalidateOnRefresh: true,
         },
-        0.32,
+        0.28,
       );
 
       principlesTl
+        .addLabel("principlesIn")
         .to(principleLines, {
-          yPercent: 0,
-          rotate: 0,
+          y: 0,
           autoAlpha: 1,
-          duration: 0.72,
-          stagger: 0.12,
-          ease: "expo.out",
-        }, "-=0.12")
+          duration: 0.56,
+          stagger: 0.08,
+          ease: "power4.out",
+        }, "principlesIn")
         .to(".principles-work-underline", {
           scaleX: 1,
-          duration: 0.52,
-          ease: "expo.out",
-        }, "-=0.28")
+          duration: 0.46,
+          ease: "power3.out",
+        }, "principlesIn+=0.16")
         .to(".principles-summary", {
           y: 0,
           autoAlpha: 1,
-          duration: 0.42,
+          duration: 0.4,
           ease: "power3.out",
-        }, "-=0.22")
+        }, "principlesIn+=0.2")
         .to(testimonialsTrack, {
           y: 0,
           autoAlpha: 1,
-          duration: 0.5,
+          duration: 0.58,
           ease: "power3.out",
-        })
-        .addLabel("navigationComplete")
+        }, "principlesIn+=0.12")
+        .addLabel("navigationComplete", "principlesIn+=0.76")
         .to(testimonialsTrack, {
           x: () => -getTestimonialsDistance(),
-          duration: 4.2,
+          duration: 4.4,
+          force3D: true,
           ease: "none",
-        }, "+=0.08")
+        }, "+=0.04")
         .to(".clients-heading", {
-          y: -28,
+          y: -18,
           autoAlpha: 0,
-          duration: 0.34,
-          ease: "power2.in",
-        })
-        .to(lastPrincipleCard, {
-          x: getPrincipleCardX,
-          y: getPrincipleCardY,
-          scale: getPrincipleCardScale,
-          borderRadius: 0,
-          zIndex: 40,
-          transformOrigin: "center center",
-          duration: 1.5,
+          duration: 0.46,
           ease: "power2.inOut",
+        }, "-=0.36")
+        .set(principlesTakeover, {
+          autoAlpha: 1,
+          clipPath: getPrincipleTakeoverClip,
         })
-        .to(lastPrincipleContent, {
+        .to(principlesTakeover, {
+          clipPath: "inset(0px 0px 0px 0px round 0px)",
+          duration: 1.65,
+          ease: "power3.inOut",
+        }, "+=0.02")
+        .to(testimonialsTrack, {
           autoAlpha: 0,
-          duration: 0.38,
-          stagger: 0.025,
-          ease: "power2.out",
-        }, "-=0.72");
+          duration: 0.82,
+          ease: "power2.inOut",
+        }, "<+0.62");
       cinematicNavigationRef.current.set("clients", () =>
         principlesController.navigationLanding(
           principlesTl.labels.navigationComplete / principlesTl.duration(),
@@ -1646,6 +1658,7 @@ export function App() {
                 ))}
               </div>
             </div>
+            <div className="principles-takeover" aria-hidden="true" />
           </div>
         </section>
       </main>

@@ -1461,7 +1461,9 @@ a:focus-visible {
   gap: 14px;
   width: max-content;
   padding-right: 24px;
-  will-change: transform;
+  backface-visibility: hidden;
+  transform: translate3d(0, 0, 0);
+  will-change: transform, opacity;
 }
 
 .testimonial-card {
@@ -1474,6 +1476,8 @@ a:focus-visible {
   border-radius: 18px;
   padding: 30px;
   background: rgba(255, 255, 255, 0.7);
+  backface-visibility: hidden;
+  contain: paint;
 }
 
 .testimonial-card:nth-child(2) {
@@ -1491,7 +1495,16 @@ a:focus-visible {
 
 .testimonial-card:nth-child(5) {
   background: var(--acid);
-  will-change: transform, border-radius;
+}
+
+.principles-takeover {
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  pointer-events: none;
+  background: var(--acid);
+  backface-visibility: hidden;
+  will-change: clip-path;
 }
 
 .testimonial-index {
@@ -2980,6 +2993,10 @@ a:focus-visible {
     opacity: 1 !important;
     visibility: visible !important;
     will-change: auto;
+  }
+
+  .principles-takeover {
+    display: none;
   }
 
   .testimonial-card {
