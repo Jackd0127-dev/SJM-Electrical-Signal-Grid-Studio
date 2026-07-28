@@ -1499,12 +1499,18 @@ a:focus-visible {
 
 .principles-takeover {
   position: absolute;
-  z-index: 2;
-  inset: 0;
+  z-index: 4;
+  top: 0;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid rgba(16, 16, 15, 0.08);
+  padding: 30px;
   pointer-events: none;
   background: var(--acid);
   backface-visibility: hidden;
-  will-change: clip-path;
+  will-change: transform, border-radius;
 }
 
 .testimonial-index {
@@ -1523,7 +1529,8 @@ a:focus-visible {
   line-height: 0.9;
 }
 
-.testimonial-card blockquote {
+.testimonial-card blockquote,
+.principles-takeover blockquote {
   margin: 22px 0 auto;
   max-width: 520px;
   font-size: clamp(1.55rem, 2.35vw, 2.65rem);
@@ -1531,14 +1538,16 @@ a:focus-visible {
   letter-spacing: -0.04em;
 }
 
-.testimonial-card > div {
+.testimonial-card > div,
+.principles-takeover > div {
   display: flex;
   align-items: center;
   gap: 12px;
   padding-top: 32px;
 }
 
-.testimonial-card img {
+.testimonial-card img,
+.principles-takeover img {
   width: 42px;
   height: 42px;
   border-radius: 50%;
@@ -1547,17 +1556,20 @@ a:focus-visible {
   object-fit: contain;
 }
 
-.testimonial-card p {
+.testimonial-card p,
+.principles-takeover p {
   display: grid;
   gap: 3px;
   margin: 0;
 }
 
-.testimonial-card p strong {
+.testimonial-card p strong,
+.principles-takeover p strong {
   font-size: 0.9rem;
 }
 
-.testimonial-card p span {
+.testimonial-card p span,
+.principles-takeover p span {
   color: rgba(16, 16, 15, 0.55);
   font-size: 0.7rem;
 }

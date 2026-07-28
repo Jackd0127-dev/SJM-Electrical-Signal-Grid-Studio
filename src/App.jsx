@@ -831,26 +831,33 @@ export function App() {
       const testimonialsViewport = document.querySelector(".testimonials");
       const lastPrincipleCard = document.querySelector(".testimonial-card:last-child");
       const principlesTakeover = document.querySelector(".principles-takeover");
+      const principlesTakeoverContent = gsap.utils.toArray(
+        ".testimonial-index, .quote-mark, blockquote, .principles-takeover > div",
+        principlesTakeover,
+      );
       const getTestimonialsDistance = () =>
         Math.max(0, testimonialsTrack.scrollWidth - window.innerWidth + 48);
-      const getPrincipleTakeoverClip = () => {
+      const getPrincipleTakeoverState = () => {
         const finalLeft =
           testimonialsViewport.offsetLeft +
           lastPrincipleCard.offsetLeft -
           getTestimonialsDistance();
         const finalTop = testimonialsViewport.offsetTop + lastPrincipleCard.offsetTop;
-        const right = Math.max(
-          0,
-          window.innerWidth - finalLeft - lastPrincipleCard.offsetWidth,
-        );
-        const bottom = Math.max(
-          0,
-          window.innerHeight - finalTop - lastPrincipleCard.offsetHeight,
-        );
-        return `inset(${Math.max(0, finalTop)}px ${right}px ${bottom}px ${Math.max(
-          0,
+        const width = lastPrincipleCard.offsetWidth;
+        const height = lastPrincipleCard.offsetHeight;
+        const scale = Math.max(
+          window.innerWidth / width,
+          window.innerHeight / height,
+        ) * 1.06;
+        return {
           finalLeft,
-        )}px round 18px)`;
+          finalTop,
+          width,
+          height,
+          targetX: window.innerWidth / 2 - width / 2,
+          targetY: window.innerHeight / 2 - height / 2,
+          scale,
+        };
       };
       gsap.set(principleLines, {
         y: 28,
@@ -867,7 +874,8 @@ export function App() {
       });
       gsap.set(principlesTakeover, {
         autoAlpha: 0,
-        clipPath: getPrincipleTakeoverClip,
+        transformOrigin: "center center",
+        force3D: true,
       });
 
       const principlesTl = gsap.timeline({ paused: true });
@@ -924,18 +932,33 @@ export function App() {
         }, "-=0.36")
         .set(principlesTakeover, {
           autoAlpha: 1,
-          clipPath: getPrincipleTakeoverClip,
+          x: () => getPrincipleTakeoverState().finalLeft,
+          y: () => getPrincipleTakeoverState().finalTop,
+          width: () => getPrincipleTakeoverState().width,
+          height: () => getPrincipleTakeoverState().height,
+          scale: 1,
+          borderRadius: 18,
         })
         .to(principlesTakeover, {
-          clipPath: "inset(0px 0px 0px 0px round 0px)",
-          duration: 1.65,
-          ease: "power3.inOut",
+          x: () => getPrincipleTakeoverState().targetX,
+          y: () => getPrincipleTakeoverState().targetY,
+          scale: () => getPrincipleTakeoverState().scale,
+          borderRadius: 0,
+          duration: 1.72,
+          force3D: true,
+          ease: "power4.inOut",
         }, "+=0.02")
+        .to(principlesTakeoverContent, {
+          autoAlpha: 0,
+          duration: 0.48,
+          stagger: 0.016,
+          ease: "power2.inOut",
+        }, "<+0.2")
         .to(testimonialsTrack, {
           autoAlpha: 0,
-          duration: 0.82,
+          duration: 0.72,
           ease: "power2.inOut",
-        }, "<+0.62");
+        }, "<+0.5");
       cinematicNavigationRef.current.set("clients", () =>
         principlesController.navigationLanding(
           principlesTl.labels.navigationComplete / principlesTl.duration(),
@@ -1658,7 +1681,18 @@ export function App() {
                 ))}
               </div>
             </div>
-            <div className="principles-takeover" aria-hidden="true" />
+            <div className="principles-takeover" aria-hidden="true">
+              <span className="testimonial-index">05</span>
+              <span className="quote-mark">“</span>
+              <blockquote>{testimonials[testimonials.length - 1].quote}</blockquote>
+              <div>
+                <img src={`${A}/logo-icon.svg`} alt="" width="42" height="42" />
+                <p>
+                  <strong>{testimonials[testimonials.length - 1].company}</strong>
+                  <span>{testimonials[testimonials.length - 1].person}</span>
+                </p>
+              </div>
+            </div>
           </div>
         </section>
       </main>
