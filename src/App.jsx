@@ -109,21 +109,22 @@ const approachImages = [
     height: 736,
   },
   {
-    src: `${A}/project-consumer-unit-user.webp`,
-    alt: "Electrician testing a consumer unit",
-    width: 664,
+    src: `${A}/approach-staircase-lighting.webp`,
+    alt: "Illuminated staircase with integrated linear lighting",
+    width: 736,
+    height: 920,
+  },
+  {
+    src: `${A}/approach-path-lighting.webp`,
+    alt: "Curved garden path with integrated edge lighting",
+    width: 736,
+    height: 1308,
+  },
+  {
+    src: `${A}/approach-exterior-lighting.webp`,
+    alt: "Modern exterior wall lighting at dusk",
+    width: 1000,
     height: 1000,
-  },
-  {
-    src: `${A}/hero-electrician.webp`,
-    alt: "SJM Electrical portfolio electrician",
-  },
-  {
-    src: `${A}/hero-team-floating.webp`,
-    alt: "SJM Electrical portfolio team",
-    team: true,
-    width: 1536,
-    height: 1024,
   },
 ];
 
