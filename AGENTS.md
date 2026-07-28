@@ -22,12 +22,13 @@ Build app UI in `src/`. Keep `.openai/hosting.json`, `worker/index.js`, `scripts
 - Present the mobile concept-project reel as a centred vertical stack driven by ordinary page scrolling, with a mobile-specific “Scroll to explore concepts” cue; keep the Services Email and Call pills centred as an equal two-column row.
 - Prioritise native mobile scrolling below the project stack: avoid scrubbed/pinned GSAP timelines at phone widths, use natural document flow for Approach, Services, Principles, and Footer, and reserve the full choreography for larger screens.
 - Render the mobile hero directly in its final state without GSAP repositioning or post-load image snapping, and account for iPhone safe-area insets in the fixed header, hero offset, and open navigation panel.
-- Keep GSAP and ScrollTrigger out of the mobile download path through desktop-only dynamic imports; avoid `content-visibility` reveal bursts, decode only three Approach images on phones, and remove expensive mobile blur/shadow paint effects.
-- Warm the remaining mobile project/Approach images with idle asynchronous decoding and isolate the fixed header/WhatsApp launcher into small paint-contained compositor layers to avoid cold-scroll decode and repaint stalls.
+- Keep GSAP and ScrollTrigger out of the mobile download path through desktop-only dynamic imports; avoid `content-visibility` reveal bursts and remove expensive mobile blur/shadow paint effects.
+- Warm the remaining mobile project images with idle asynchronous decoding and isolate the fixed header/WhatsApp launcher into small paint-contained compositor layers to avoid cold-scroll decode and repaint stalls.
 - Keep the desktop navigation in document order: Home, Projects, Approach, Services, Principles, numbered 01–05.
 - Begin the desktop Approach title while the section is entering after Projects, and cap the progress velocity of the Approach, Services, and Principles timelines so fast wheel or trackpad input still resolves cinematically.
 - Exit the desktop Services scene completely through the top-left corner, revealing Principles beneath it as a full diagonal transition.
 - On mobile, keep “Electrical, made clear.” on one compact line below the safe-area header, place its supporting copy directly underneath, and anchor the two high-contrast hero actions near the bottom of the team image.
-- Keep the mobile Approach stack compact: title, cards, five process nodes, and the following section should read as one continuous composition without large reserved gaps.
+- Present Approach as a full-bleed, web-optimised background video assembled from the three supplied interior clips; remove the six image cards and draw the five-step linkage over the footage, positioned higher in the scene with a restrained contrast scrim.
+- Keep the mobile Approach composition compact: title, video, five process nodes, and the following section should read as one continuous composition without large reserved gaps.
 - Keep every mobile contact input and textarea at a computed font size of at least 16px so iOS Safari does not zoom the page when a field receives focus.
 - Header navigation to Approach, Services, and Principles should land on each section's completed presentation state; ordinary page scrolling should still play the full cinematic sequence.

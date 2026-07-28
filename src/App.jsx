@@ -91,43 +91,6 @@ const projects = [
   },
 ];
 
-const approachImages = [
-  {
-    src: `${A}/project-residential-lighting.webp`,
-    alt: "Finished residential lighting installation",
-  },
-  {
-    src: `${A}/project-boutique-lighting-user.webp`,
-    alt: "Architectural linear lighting installation",
-    width: 736,
-    height: 981,
-  },
-  {
-    src: `${A}/project-home-ev-charging-user.webp`,
-    alt: "Home electric vehicle charger installation",
-    width: 736,
-    height: 736,
-  },
-  {
-    src: `${A}/approach-staircase-lighting.webp`,
-    alt: "Illuminated staircase with integrated linear lighting",
-    width: 736,
-    height: 920,
-  },
-  {
-    src: `${A}/approach-path-lighting.webp`,
-    alt: "Curved garden path with integrated edge lighting",
-    width: 736,
-    height: 1308,
-  },
-  {
-    src: `${A}/approach-exterior-lighting.webp`,
-    alt: "Modern exterior wall lighting at dusk",
-    width: 1000,
-    height: 1000,
-  },
-];
-
 const approachSteps = [
   ["01", "Listen", "Understand the space and the outcome"],
   ["02", "Survey", "Check access, supply, and constraints"],
@@ -244,9 +207,6 @@ export function App() {
   const [projectIndex, setProjectIndex] = useState(0);
   const [formSubmitted, setFormSubmitted] = useState(false);
   const mobileLayoutRef = useRef(window.matchMedia("(max-width: 620px)").matches);
-  const visibleApproachImages = mobileLayoutRef.current
-    ? [approachImages[0], approachImages[2], approachImages[5]]
-    : approachImages;
 
   useBoundedScroll();
 
@@ -266,10 +226,7 @@ export function App() {
   useEffect(() => {
     if (!mobileLayoutRef.current) return undefined;
 
-    const sources = [
-      ...projects.map((project) => project.image),
-      ...visibleApproachImages.map((image) => image.src),
-    ];
+    const sources = projects.map((project) => project.image);
     const uniqueSources = [...new Set(sources)];
     let cancelled = false;
 
@@ -545,7 +502,7 @@ export function App() {
 
       const approachWords = gsap.utils.toArray(".approach-word");
       const approachGuides = gsap.utils.toArray(".approach-title-guide span");
-      const approachImageCards = gsap.utils.toArray(".approach-image-card");
+      const approachVideoStage = document.querySelector(".approach-video-stage");
       const processNodes = gsap.utils.toArray(".process-node");
       const processLines = gsap.utils.toArray(".process-line");
       const processSvg = document.querySelector(".process-lines");
@@ -599,17 +556,12 @@ export function App() {
       syncProcessPaths();
       ScrollTrigger.addEventListener("refreshInit", syncProcessPaths);
       gsap.set(".approach-content", { y: 44, autoAlpha: 0 });
+      gsap.set(approachVideoStage, { scale: 1.035, autoAlpha: 0 });
       gsap.set(approachWords, {
         y: 54,
         scale: 0.82,
         rotate: (index) => (index % 2 === 0 ? -3 : 3),
         opacity: 0,
-      });
-      gsap.set(approachImageCards, {
-        y: 90,
-        scale: 0.72,
-        rotate: (index) => (index % 2 === 0 ? -5 : 5),
-        autoAlpha: 0,
       });
       gsap.set(processNodes, { opacity: 0.18, visibility: "visible" });
       processLines.forEach((line) => {
@@ -671,15 +623,17 @@ export function App() {
           duration: 0.82,
           ease: "power3.out",
         }, "-=0.2")
-        .to(approachImageCards, {
-          y: 0,
+        .to(approachVideoStage, {
           scale: 1,
-          rotate: 0,
           autoAlpha: 1,
-          duration: 0.68,
-          stagger: 0.17,
-          ease: "back.out(1.3)",
-        }, "-=0.42")
+          duration: 1.05,
+          ease: "power3.out",
+        }, "-=0.7")
+        .to(approachWords, {
+          color: "#ffffff",
+          duration: 0.65,
+          ease: "power2.out",
+        }, "<+0.14")
         .to(processNodes[0], {
           opacity: 1,
           duration: 0.3,
@@ -1521,6 +1475,30 @@ export function App() {
 
         <section className="about-section" id="about">
           <div className="approach-sticky">
+            <div className="approach-video-stage" aria-hidden="true">
+              <img
+                className="approach-background-poster"
+                src={`${A}/approach-background-poster.webp`}
+                alt=""
+                width="1600"
+                height="900"
+                loading="lazy"
+                decoding="async"
+              />
+              <video
+                className="approach-background-video"
+                autoPlay
+                muted
+                loop
+                playsInline
+                preload="metadata"
+                poster={`${A}/approach-background-poster.webp`}
+              >
+                <source src={`${A}/approach-background.mp4`} type="video/mp4" />
+              </video>
+              <div className="approach-video-scrim" />
+            </div>
+
             <div className="approach-title-stage">
               <h2 className="approach-words" aria-label="Clear from the start">
                 {["CLEAR", "FROM", "THE", "START"].map((word) => (
@@ -1533,23 +1511,6 @@ export function App() {
             </div>
 
             <div className="approach-content">
-              <div className="approach-image-stack" aria-label="A selection of SJM Electrical portfolio work">
-                {visibleApproachImages.map((image, index) => (
-                  <figure className="approach-image-slot" key={`${image.src}-${index}`}>
-                    <div className={`approach-image-card${image.team ? " approach-image-card--team" : ""}`}>
-                      <img
-                        src={image.src}
-                        alt={image.alt}
-                        loading="lazy"
-                        decoding="async"
-                        width={image.width || (image.src.includes("hero-electrician") ? 1024 : 1536)}
-                        height={image.height || (image.src.includes("hero-electrician") ? 1536 : 1024)}
-                      />
-                    </div>
-                  </figure>
-                ))}
-              </div>
-
               <div className="process-flow" aria-label="SJM Electrical concept project journey">
                 <svg
                   className="process-lines"
