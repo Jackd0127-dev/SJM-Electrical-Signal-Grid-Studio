@@ -32,3 +32,4 @@ Build app UI in `src/`. Keep `.openai/hosting.json`, `worker/index.js`, `scripts
 - Keep the mobile Approach composition compact: title, video, five process nodes, and the following section should read as one continuous composition without large reserved gaps.
 - Keep every mobile contact input and textarea at a computed font size of at least 16px so iOS Safari does not zoom the page when a field receives focus.
 - Header navigation to Approach, Services, and Principles should land on each section's completed presentation state; ordinary page scrolling should still play the full cinematic sequence.
+- Keep desktop motion on one smoothing layer: bounded wheel input feeds direct ScrollTrigger progress, geometry is cached outside scroll loops, background video pauses offscreen, expensive blur is pre-rendered, and mobile keeps native scrolling without GSAP.

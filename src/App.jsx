@@ -84,6 +84,7 @@ const projects = [
       "A methodical upgrade, carefully labelled, tested, and explained.",
     editorialTone: "dark",
     image: `${A}/project-consumer-unit-user.webp`,
+    transitionImage: `${A}/project-consumer-unit-blurred.webp`,
     width: 664,
     height: 1000,
     objectPosition: "center 48%",
@@ -203,8 +204,6 @@ export function App() {
   const projectIndexRef = useRef(0);
   const cinematicNavigationRef = useRef(new Map());
   const [menuOpen, setMenuOpen] = useState(false);
-  const [activeSection, setActiveSection] = useState("home");
-  const [projectIndex, setProjectIndex] = useState(0);
   const [formSubmitted, setFormSubmitted] = useState(false);
   const mobileLayoutRef = useRef(window.matchMedia("(max-width: 620px)").matches);
 
@@ -257,7 +256,10 @@ export function App() {
   const updateProjectIndex = (next) => {
     if (projectIndexRef.current === next) return;
     projectIndexRef.current = next;
-    setProjectIndex(next);
+    rootRef.current?.querySelectorAll(".project-card").forEach((card, index) => {
+      card.classList.toggle("is-current", index === next);
+      card.classList.toggle("is-past", index < next);
+    });
   };
 
   useEffect(() => {
@@ -269,12 +271,61 @@ export function App() {
         const visible = entries
           .filter((entry) => entry.isIntersecting)
           .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
-        if (visible) setActiveSection(visible.target.id);
+        if (!visible) return;
+        rootRef.current?.querySelectorAll(".desktop-nav button").forEach((button) => {
+          button.classList.toggle(
+            "is-active",
+            button.dataset.section === visible.target.id,
+          );
+        });
       },
       { rootMargin: "-30% 0px -55%", threshold: [0, 0.2, 0.5] },
     );
     sections.forEach((section) => observer.observe(section));
     return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const video = rootRef.current?.querySelector(".approach-background-video");
+    const section = rootRef.current?.querySelector(".about-section");
+    if (!video || !section) return undefined;
+
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const mobileLayout = window.matchMedia("(max-width: 620px)");
+    let sectionIsNear = false;
+
+    const syncPlayback = () => {
+      const shouldPlay =
+        sectionIsNear &&
+        !document.hidden &&
+        !reducedMotion.matches &&
+        !mobileLayout.matches;
+      if (shouldPlay) {
+        void video.play().catch(() => undefined);
+      } else {
+        video.pause();
+      }
+    };
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        sectionIsNear = entry.isIntersecting;
+        syncPlayback();
+      },
+      { rootMargin: "100% 0px" },
+    );
+    observer.observe(section);
+    document.addEventListener("visibilitychange", syncPlayback);
+    reducedMotion.addEventListener("change", syncPlayback);
+    mobileLayout.addEventListener("change", syncPlayback);
+
+    return () => {
+      video.pause();
+      observer.disconnect();
+      document.removeEventListener("visibilitychange", syncPlayback);
+      reducedMotion.removeEventListener("change", syncPlayback);
+      mobileLayout.removeEventListener("change", syncPlayback);
+    };
   }, []);
 
   useEffect(() => {
@@ -291,6 +342,8 @@ export function App() {
     let ctx;
     let ScrollTrigger;
     let syncProcessPaths;
+    let syncMorphTargets;
+    let measurePrinciplesLayout;
     let measureProjectPositions;
     const cinematicControllers = [];
 
@@ -303,6 +356,11 @@ export function App() {
 
       ScrollTrigger = scrollTriggerModule.ScrollTrigger;
       gsap.registerPlugin(ScrollTrigger);
+      gsap.ticker.lagSmoothing(500, 33);
+      ScrollTrigger.config({
+        ignoreMobileResize: true,
+        limitCallbacks: true,
+      });
       document.body.classList.add("hero-intro-running");
 
       ctx = gsap.context(() => {
@@ -311,12 +369,25 @@ export function App() {
         scrollTriggerConfig,
         maxProgressPerSecond = 0.36,
       ) => {
-        const state = { current: 0, target: 0, navigationProgress: null };
+        const state = {
+          active: false,
+          current: 0,
+          target: 0,
+          navigationProgress: null,
+        };
         const configuredUpdate = scrollTriggerConfig.onUpdate;
         timeline.pause(0);
 
         const tick = (_time, deltaTime) => {
           const distance = state.target - state.current;
+          const isBoundary = state.target === 0 || state.target === 1;
+          if (!state.active && state.navigationProgress === null && isBoundary) {
+            if (Math.abs(distance) >= 0.0001) {
+              state.current = state.target;
+              timeline.progress(state.current);
+            }
+            return;
+          }
           if (Math.abs(distance) < 0.0001) {
             if (state.current !== state.target) {
               state.current = state.target;
@@ -338,6 +409,7 @@ export function App() {
           onUpdate: (self) => {
             if (state.navigationProgress === null) {
               state.target = self.progress;
+              state.active = self.isActive;
             }
             configuredUpdate?.(self);
           },
@@ -359,6 +431,7 @@ export function App() {
                 state.navigationProgress = null;
                 state.current = landingProgress;
                 state.target = scrollTrigger.progress;
+                state.active = scrollTrigger.isActive;
                 timeline.progress(landingProgress);
               },
             };
@@ -482,7 +555,7 @@ export function App() {
           trigger: ".hero",
           start: "top top",
           end: "bottom top",
-          scrub: 0.8,
+          scrub: true,
         },
       });
       heroTl
@@ -500,17 +573,53 @@ export function App() {
         });
       });
 
+      const getOffsetWithin = (element, ancestor) => {
+        let x = 0;
+        let y = 0;
+        let node = element;
+        while (node && node !== ancestor) {
+          x += node.offsetLeft;
+          y += node.offsetTop;
+          node = node.offsetParent;
+        }
+        return { x, y, width: element.offsetWidth };
+      };
+      const measureWordTargets = (words, guides, stage) =>
+        words.map((word, index) => {
+          const source = getOffsetWithin(word, stage);
+          const target = getOffsetWithin(guides[index], stage);
+          return {
+            x: target.x - source.x,
+            y: target.y - source.y,
+            scale: target.width / Math.max(1, source.width),
+          };
+        });
+
       const approachWords = gsap.utils.toArray(".approach-word");
       const approachGuides = gsap.utils.toArray(".approach-title-guide span");
+      const approachTitleStage = document.querySelector(".approach-title-stage");
       const approachVideoStage = document.querySelector(".approach-video-stage");
       const processNodes = gsap.utils.toArray(".process-node");
       const processLines = gsap.utils.toArray(".process-line");
       const processSvg = document.querySelector(".process-lines");
+      let approachMorphTargets = measureWordTargets(
+        approachWords,
+        approachGuides,
+        approachTitleStage,
+      );
       syncProcessPaths = () => {
         const svgRect = processSvg.getBoundingClientRect();
         const dots = processNodes.map((node) =>
           node.querySelector(".process-node-dot").getBoundingClientRect(),
         );
+        const previousProgress = processLines.map((line) => {
+          const styles = getComputedStyle(line);
+          const dash = Number.parseFloat(styles.strokeDasharray);
+          const offset = Number.parseFloat(styles.strokeDashoffset);
+          return Number.isFinite(dash) && dash > 0 && Number.isFinite(offset)
+            ? gsap.utils.clamp(0, 1, 1 - offset / dash)
+            : 0;
+        });
         const points = dots.map((dot) => ({
           x: dot.left + dot.width / 2 - svgRect.left,
           y: dot.top + dot.height / 2 - svgRect.top,
@@ -521,12 +630,6 @@ export function App() {
           const end = points[index + 1];
           const distance = end.x - start.x;
           const control = distance * 0.38;
-          const previousDash = Number.parseFloat(getComputedStyle(line).strokeDasharray);
-          const previousOffset = Number.parseFloat(getComputedStyle(line).strokeDashoffset);
-          const previousProgress =
-            Number.isFinite(previousDash) && previousDash > 0 && Number.isFinite(previousOffset)
-              ? gsap.utils.clamp(0, 1, 1 - previousOffset / previousDash)
-              : 0;
           const endsAtRaisedNode = index === 0 || index === 2;
 
           if (endsAtRaisedNode) {
@@ -548,9 +651,12 @@ export function App() {
               } ${end.y}, ${end.x} ${end.y}`,
             );
           }
-          const length = line.getTotalLength();
+        });
+        const lengths = processLines.map((line) => line.getTotalLength());
+        processLines.forEach((line, index) => {
+          const length = lengths[index];
           line.style.strokeDasharray = `${length} ${length}`;
-          line.style.strokeDashoffset = `${length * (1 - previousProgress)}`;
+          line.style.strokeDashoffset = `${length * (1 - previousProgress[index])}`;
         });
       };
       syncProcessPaths();
@@ -598,21 +704,9 @@ export function App() {
         })
         .to({}, { duration: 0.24 })
         .to(approachWords, {
-          x: (index, element) => {
-            const source = element.getBoundingClientRect();
-            const target = approachGuides[index].getBoundingClientRect();
-            return target.left - source.left;
-          },
-          y: (index, element) => {
-            const source = element.getBoundingClientRect();
-            const target = approachGuides[index].getBoundingClientRect();
-            return target.top - source.top;
-          },
-          scale: (index, element) => {
-            const source = element.getBoundingClientRect();
-            const target = approachGuides[index].getBoundingClientRect();
-            return target.width / source.width;
-          },
+          x: (index) => approachMorphTargets[index].x,
+          y: (index) => approachMorphTargets[index].y,
+          scale: (index) => approachMorphTargets[index].scale,
           duration: 1.18,
           stagger: 0.035,
           ease: "expo.inOut",
@@ -662,8 +756,27 @@ export function App() {
 
       const serviceWords = gsap.utils.toArray(".services-word");
       const serviceGuides = gsap.utils.toArray(".services-title-guide span");
+      const servicesTitleStage = document.querySelector(".services-title-stage");
       const serviceCards = gsap.utils.toArray(".service-card");
       const serviceContactPills = gsap.utils.toArray(".service-contact-pill");
+      let serviceMorphTargets = measureWordTargets(
+        serviceWords,
+        serviceGuides,
+        servicesTitleStage,
+      );
+      syncMorphTargets = () => {
+        approachMorphTargets = measureWordTargets(
+          approachWords,
+          approachGuides,
+          approachTitleStage,
+        );
+        serviceMorphTargets = measureWordTargets(
+          serviceWords,
+          serviceGuides,
+          servicesTitleStage,
+        );
+      };
+      ScrollTrigger.addEventListener("refreshInit", syncMorphTargets);
       gsap.set(serviceWords, {
         y: 58,
         scale: 0.84,
@@ -707,21 +820,9 @@ export function App() {
         })
         .to({}, { duration: 0.22 })
         .to(serviceWords, {
-          x: (index, element) => {
-            const source = element.getBoundingClientRect();
-            const target = serviceGuides[index].getBoundingClientRect();
-            return target.left - source.left;
-          },
-          y: (index, element) => {
-            const source = element.getBoundingClientRect();
-            const target = serviceGuides[index].getBoundingClientRect();
-            return target.top - source.top;
-          },
-          scale: (index, element) => {
-            const source = element.getBoundingClientRect();
-            const target = serviceGuides[index].getBoundingClientRect();
-            return target.width / source.width;
-          },
+          x: (index) => serviceMorphTargets[index].x,
+          y: (index) => serviceMorphTargets[index].y,
+          scale: (index) => serviceMorphTargets[index].scale,
           duration: 1.12,
           stagger: 0.035,
           ease: "expo.inOut",
@@ -789,13 +890,25 @@ export function App() {
         ".testimonial-index, .quote-mark, blockquote, .principles-takeover > div",
         principlesTakeover,
       );
-      const getTestimonialsDistance = () =>
-        Math.max(0, testimonialsTrack.scrollWidth - window.innerWidth + 48);
-      const getPrincipleTakeoverState = () => {
+      let testimonialsDistance = 0;
+      let principleTakeoverState = {
+        finalLeft: 0,
+        finalTop: 0,
+        width: 1,
+        height: 1,
+        targetX: 0,
+        targetY: 0,
+        scale: 1,
+      };
+      measurePrinciplesLayout = () => {
+        testimonialsDistance = Math.max(
+          0,
+          testimonialsTrack.scrollWidth - window.innerWidth + 48,
+        );
         const finalLeft =
           testimonialsViewport.offsetLeft +
           lastPrincipleCard.offsetLeft -
-          getTestimonialsDistance();
+          testimonialsDistance;
         const finalTop = testimonialsViewport.offsetTop + lastPrincipleCard.offsetTop;
         const width = lastPrincipleCard.offsetWidth;
         const height = lastPrincipleCard.offsetHeight;
@@ -803,7 +916,7 @@ export function App() {
           window.innerWidth / width,
           window.innerHeight / height,
         ) * 1.06;
-        return {
+        principleTakeoverState = {
           finalLeft,
           finalTop,
           width,
@@ -813,6 +926,8 @@ export function App() {
           scale,
         };
       };
+      measurePrinciplesLayout();
+      ScrollTrigger.addEventListener("refreshInit", measurePrinciplesLayout);
       gsap.set(principleLines, {
         y: 28,
         autoAlpha: 0,
@@ -873,7 +988,7 @@ export function App() {
         }, "principlesIn+=0.12")
         .addLabel("navigationComplete", "principlesIn+=0.76")
         .to(testimonialsTrack, {
-          x: () => -getTestimonialsDistance(),
+          x: () => -testimonialsDistance,
           duration: 4.4,
           force3D: true,
           ease: "none",
@@ -886,17 +1001,17 @@ export function App() {
         }, "-=0.36")
         .set(principlesTakeover, {
           autoAlpha: 1,
-          x: () => getPrincipleTakeoverState().finalLeft,
-          y: () => getPrincipleTakeoverState().finalTop,
-          width: () => getPrincipleTakeoverState().width,
-          height: () => getPrincipleTakeoverState().height,
+          x: () => principleTakeoverState.finalLeft,
+          y: () => principleTakeoverState.finalTop,
+          width: () => principleTakeoverState.width,
+          height: () => principleTakeoverState.height,
           scale: 1,
           borderRadius: 18,
         })
         .to(principlesTakeover, {
-          x: () => getPrincipleTakeoverState().targetX,
-          y: () => getPrincipleTakeoverState().targetY,
-          scale: () => getPrincipleTakeoverState().scale,
+          x: () => principleTakeoverState.targetX,
+          y: () => principleTakeoverState.targetY,
+          scale: () => principleTakeoverState.scale,
           borderRadius: 0,
           duration: 1.72,
           force3D: true,
@@ -983,7 +1098,7 @@ export function App() {
           trigger: ".site-footer",
           start: "top top",
           end: () => `+=${window.innerHeight}`,
-          scrub: 0.55,
+          scrub: true,
           invalidateOnRefresh: true,
         },
       });
@@ -994,7 +1109,8 @@ export function App() {
         const introNumber = workRef.current.querySelector(".project-card--intro .project-number");
         const lastProjectCard = workRef.current.querySelector(".project-card:last-child");
         const lastProjectMedia = lastProjectCard?.querySelector(".project-media");
-        const lastProjectImage = lastProjectCard?.querySelector(".project-media img");
+        const lastProjectImage = lastProjectCard?.querySelector(".project-image");
+        const lastProjectBlur = lastProjectCard?.querySelector(".project-transition-blur");
         const lastProjectWash = lastProjectCard?.querySelector(".project-transition-wash");
         const lastProjectChrome = lastProjectCard
           ? gsap.utils.toArray(
@@ -1005,29 +1121,37 @@ export function App() {
         const projectMedias = gsap.utils.toArray(".project-media", workRef.current);
         let mediaOffsets = [];
         let trackBaseLeft = 0;
-        const getDistance = () =>
-          Math.max(0, trackRef.current.scrollWidth - window.innerWidth + 32);
-        const getZoomDistance = () =>
-          Math.min(1320, Math.max(900, window.innerHeight * 1.25));
-        const getSidebarWidth = () => introSidebar?.offsetWidth || 0;
-        const getLastCardScale = () =>
-          Math.max(
-            window.innerWidth / lastProjectCard.offsetWidth,
-            window.innerHeight / lastProjectCard.offsetHeight,
-          ) * 1.22;
-        const getApproachPaper = () =>
-          getComputedStyle(document.querySelector(".about-section")).backgroundColor;
-        const getLastCardX = () => {
-          const paddingLeft = parseFloat(getComputedStyle(workRef.current).paddingLeft);
-          const finalLeft = paddingLeft + lastProjectCard.offsetLeft - getDistance();
-          return window.innerWidth / 2 - (finalLeft + lastProjectCard.offsetWidth / 2);
+        let projectMetrics = {
+          distance: 0,
+          zoomDistance: 900,
+          zoomRatio: 1,
+          sidebarWidth: 0,
+          lastCardScale: 1,
+          lastCardX: 0,
+          lastCardY: 0,
+          approachPaper: "rgb(238, 233, 225)",
+          fullSizeAt: 0,
+          approachFrom: 0,
+          focusLine: 0,
+          zoomStart: 1,
         };
-        const getLastCardY = () => {
-          const paddingTop = parseFloat(getComputedStyle(workRef.current).paddingTop);
-          const finalTop = paddingTop + lastProjectCard.offsetTop;
-          return window.innerHeight / 2 - (finalTop + lastProjectCard.offsetHeight / 2);
-        };
+        const previousDepth = projectMedias.map(() => ({
+          scale: Number.NaN,
+          opacity: Number.NaN,
+        }));
         measureProjectPositions = () => {
+          const distance = Math.max(
+            0,
+            trackRef.current.scrollWidth - window.innerWidth + 32,
+          );
+          const zoomDistance = Math.min(
+            1320,
+            Math.max(900, window.innerHeight * 1.25),
+          );
+          const paddingLeft = parseFloat(getComputedStyle(workRef.current).paddingLeft);
+          const paddingTop = parseFloat(getComputedStyle(workRef.current).paddingTop);
+          const finalLeft = paddingLeft + lastProjectCard.offsetLeft - distance;
+          const finalTop = paddingTop + lastProjectCard.offsetTop;
           const trackX = Number(gsap.getProperty(trackRef.current, "x")) || 0;
           trackBaseLeft = trackRef.current.getBoundingClientRect().left - trackX;
           mediaOffsets = projectMedias.map((media) => {
@@ -1039,18 +1163,37 @@ export function App() {
             }
             return offset;
           });
+          projectMetrics = {
+            distance,
+            zoomDistance,
+            zoomRatio: zoomDistance / Math.max(1, distance),
+            sidebarWidth: introSidebar?.offsetWidth || 0,
+            lastCardScale:
+              Math.max(
+                window.innerWidth / lastProjectCard.offsetWidth,
+                window.innerHeight / lastProjectCard.offsetHeight,
+              ) * 1.22,
+            lastCardX:
+              window.innerWidth / 2 -
+              (finalLeft + lastProjectCard.offsetWidth / 2),
+            lastCardY:
+              window.innerHeight / 2 -
+              (finalTop + lastProjectCard.offsetHeight / 2),
+            approachPaper: getComputedStyle(
+              document.querySelector(".about-section"),
+            ).backgroundColor,
+            fullSizeAt: Math.min(320, window.innerWidth * 0.22),
+            approachFrom: window.innerWidth * 0.94,
+            focusLine: Math.min(window.innerWidth * 0.5, 720),
+            zoomStart: distance / Math.max(1, distance + zoomDistance),
+          };
         };
         const updateProjectDepth = (scrollProgress = 0) => {
-          const fullSizeAt = Math.min(320, window.innerWidth * 0.22);
-          const approachFrom = window.innerWidth * 0.94;
           const trackX = Number(gsap.getProperty(trackRef.current, "x")) || 0;
-          const trackDistance = getDistance();
-          const zoomStart =
-            trackDistance / Math.max(1, trackDistance + getZoomDistance());
           const finalCardDepth = gsap.utils.clamp(
             0,
             1,
-            (scrollProgress - (zoomStart - 0.06)) / 0.06,
+            (scrollProgress - (projectMetrics.zoomStart - 0.06)) / 0.06,
           );
 
           projectMedias.forEach((media, index) => {
@@ -1059,7 +1202,8 @@ export function App() {
             const progress = gsap.utils.clamp(
               0,
               1,
-              (approachFrom - left) / Math.max(1, approachFrom - fullSizeAt),
+              (projectMetrics.approachFrom - left) /
+                Math.max(1, projectMetrics.approachFrom - projectMetrics.fullSizeAt),
             );
             const eased = progress * progress * (3 - 2 * progress);
             const depthScale =
@@ -1071,8 +1215,20 @@ export function App() {
                 ? Math.max(0.62 + eased * 0.38, 0.62 + finalCardDepth * 0.38)
                 : 0.62 + eased * 0.38;
 
-            media.style.setProperty("--depth-scale", String(depthScale));
-            media.style.opacity = String(depthOpacity);
+            if (
+              !Number.isFinite(previousDepth[index].scale) ||
+              Math.abs(previousDepth[index].scale - depthScale) > 0.0015
+            ) {
+              previousDepth[index].scale = depthScale;
+              media.style.setProperty("--depth-scale", String(depthScale));
+            }
+            if (
+              !Number.isFinite(previousDepth[index].opacity) ||
+              Math.abs(previousDepth[index].opacity - depthOpacity) > 0.0015
+            ) {
+              previousDepth[index].opacity = depthOpacity;
+              media.style.opacity = String(depthOpacity);
+            }
           });
         };
 
@@ -1089,20 +1245,23 @@ export function App() {
             id: "projectsTrack",
             trigger: workRef.current,
             start: "top top",
-            end: () => `+=${getDistance() + getZoomDistance()}`,
+            end: () => `+=${projectMetrics.distance + projectMetrics.zoomDistance}`,
             pin: true,
-            scrub: 0.42,
+            scrub: true,
             refreshPriority: 2,
             invalidateOnRefresh: true,
             onUpdate: (self) => {
               updateProjectDepth(self.progress);
-              const focusLine = Math.min(window.innerWidth * 0.5, 720);
               const trackX = Number(gsap.getProperty(trackRef.current, "x")) || 0;
-              const next = mediaOffsets.reduce(
-                (active, offset, index) =>
-                  trackBaseLeft + offset + trackX <= focusLine ? index : active,
-                0,
-              );
+              let next = 0;
+              for (let index = 1; index < mediaOffsets.length; index += 1) {
+                if (
+                  trackBaseLeft + mediaOffsets[index] + trackX <=
+                  projectMetrics.focusLine
+                ) {
+                  next = index;
+                }
+              }
               updateProjectIndex(next);
             },
           },
@@ -1112,7 +1271,7 @@ export function App() {
           .to(
             trackRef.current,
             {
-              x: () => -getDistance(),
+              x: () => -projectMetrics.distance,
               duration: 1,
               ease: "none",
             },
@@ -1121,7 +1280,7 @@ export function App() {
           .to(
             introSidebar,
             {
-              x: () => getSidebarWidth(),
+              x: () => projectMetrics.sidebarWidth,
               duration: 0.12,
               ease: "sine.inOut",
             },
@@ -1140,13 +1299,13 @@ export function App() {
           .to(
             lastProjectCard,
             {
-              x: getLastCardX,
-              y: getLastCardY,
-              scale: getLastCardScale,
+              x: () => projectMetrics.lastCardX,
+              y: () => projectMetrics.lastCardY,
+              scale: () => projectMetrics.lastCardScale,
               rotate: 0,
               zIndex: 20,
               transformOrigin: "center center",
-              duration: () => getZoomDistance() / Math.max(1, getDistance()),
+              duration: () => projectMetrics.zoomRatio,
               ease: "power2.inOut",
             },
             1,
@@ -1155,7 +1314,7 @@ export function App() {
             lastProjectMedia,
             {
               borderRadius: 0,
-              duration: () => getZoomDistance() / Math.max(1, getDistance()),
+              duration: () => projectMetrics.zoomRatio,
               ease: "power2.inOut",
             },
             1,
@@ -1163,11 +1322,21 @@ export function App() {
           .to(
             lastProjectImage,
             {
-              scale: 1.12,
-              filter: "blur(20px)",
-              autoAlpha: 0.38,
+              scale: 1.08,
+              autoAlpha: 0.16,
               transformOrigin: "center center",
-              duration: () => getZoomDistance() / Math.max(1, getDistance()),
+              duration: () => projectMetrics.zoomRatio,
+              ease: "power2.inOut",
+            },
+            1,
+          )
+          .to(
+            lastProjectBlur,
+            {
+              scale: 1.18,
+              autoAlpha: 0.76,
+              transformOrigin: "center center",
+              duration: () => projectMetrics.zoomRatio,
               ease: "power2.inOut",
             },
             1,
@@ -1175,9 +1344,9 @@ export function App() {
           .to(
             lastProjectWash,
             {
-              backgroundColor: getApproachPaper,
+              backgroundColor: () => projectMetrics.approachPaper,
               opacity: 1,
-              duration: () => getZoomDistance() / Math.max(1, getDistance()),
+              duration: () => projectMetrics.zoomRatio,
               ease: "sine.inOut",
             },
             1,
@@ -1206,6 +1375,12 @@ export function App() {
       cinematicControllers.forEach((controller) => controller.kill());
       if (ScrollTrigger && syncProcessPaths) {
         ScrollTrigger.removeEventListener("refreshInit", syncProcessPaths);
+      }
+      if (ScrollTrigger && syncMorphTargets) {
+        ScrollTrigger.removeEventListener("refreshInit", syncMorphTargets);
+      }
+      if (ScrollTrigger && measurePrinciplesLayout) {
+        ScrollTrigger.removeEventListener("refreshInit", measurePrinciplesLayout);
       }
       if (ScrollTrigger && measureProjectPositions) {
         ScrollTrigger.removeEventListener("refreshInit", measureProjectPositions);
@@ -1243,7 +1418,8 @@ export function App() {
           {navItems.map(([number, label, id]) => (
             <button
               key={id}
-              className={activeSection === id ? "is-active" : ""}
+              className={id === "home" ? "is-active" : ""}
+              data-section={id}
               onClick={() => scrollToSection(id)}
             >
               <span>{number}</span>
@@ -1398,8 +1574,7 @@ export function App() {
                     className={[
                       "project-card",
                       index === 0 ? "project-card--intro" : "",
-                      index === projectIndex ? "is-current" : "",
-                      index < projectIndex ? "is-past" : "",
+                      index === 0 ? "is-current" : "",
                     ].filter(Boolean).join(" ")}
                     key={project.name}
                     data-project={index}
@@ -1419,6 +1594,7 @@ export function App() {
                     )}
                     <div className="project-media">
                       <img
+                        className="project-image"
                         src={project.image}
                         alt={`${project.name} — illustrative SJM Electrical portfolio concept`}
                         loading={index < 2 ? "eager" : "lazy"}
@@ -1427,6 +1603,17 @@ export function App() {
                         height={project.height}
                         style={{ objectPosition: project.objectPosition || "center" }}
                       />
+                      {project.transitionImage && !mobileLayoutRef.current && (
+                        <img
+                          className="project-transition-blur"
+                          src={project.transitionImage}
+                          alt=""
+                          aria-hidden="true"
+                          width={project.width}
+                          height={project.height}
+                          decoding="async"
+                        />
+                      )}
                       <div className="project-scrim" />
                       {index === projects.length - 1 && (
                         <div className="project-transition-wash" aria-hidden="true" />
@@ -1485,17 +1672,18 @@ export function App() {
                 loading="lazy"
                 decoding="async"
               />
-              <video
-                className="approach-background-video"
-                autoPlay
-                muted
-                loop
-                playsInline
-                preload="metadata"
-                poster={`${A}/approach-background-poster.webp`}
-              >
-                <source src={`${A}/approach-background.mp4`} type="video/mp4" />
-              </video>
+              {!mobileLayoutRef.current && (
+                <video
+                  className="approach-background-video"
+                  muted
+                  loop
+                  playsInline
+                  preload="metadata"
+                  poster={`${A}/approach-background-poster.webp`}
+                >
+                  <source src={`${A}/approach-background.mp4`} type="video/mp4" />
+                </video>
+              )}
               <div className="approach-video-scrim" />
             </div>
 

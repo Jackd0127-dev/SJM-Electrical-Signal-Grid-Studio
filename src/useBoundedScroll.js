@@ -4,6 +4,7 @@ const MAX_SCROLL_SPEED = 2600;
 const MAX_WHEEL_IMPULSE = 320;
 const MAX_WHEEL_LEAD = 1.35;
 const BASE_EASING = 0.2;
+const FRAME_DURATION = 1000 / 60;
 
 let activeScrollTo = null;
 
@@ -40,9 +41,18 @@ export function useBoundedScroll() {
     let frameId = 0;
     let lastFrame = 0;
     let completionCallback = null;
+    let maxScrollTop = 0;
+    let viewportHeight = window.innerHeight;
 
-    const maxScroll = () =>
-      Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+    const updateBounds = () => {
+      viewportHeight = window.innerHeight;
+      maxScrollTop = Math.max(
+        0,
+        document.documentElement.scrollHeight - viewportHeight,
+      );
+      target = clamp(target, 0, maxScrollTop);
+    };
+    updateBounds();
 
     const releaseCompletion = () => {
       const callback = completionCallback;
@@ -56,7 +66,6 @@ export function useBoundedScroll() {
       lastFrame = 0;
       current = window.scrollY;
       target = current;
-      document.body.classList.remove("is-scroll-gliding");
       releaseCompletion();
     };
 
@@ -64,10 +73,10 @@ export function useBoundedScroll() {
       frameId = 0;
       const elapsed = clamp(lastFrame ? now - lastFrame : 16.667, 8, 34);
       lastFrame = now;
-      target = clamp(target, 0, maxScroll());
+      target = clamp(target, 0, maxScrollTop);
 
       const distance = target - current;
-      const easing = 1 - Math.pow(1 - BASE_EASING, elapsed / 16.667);
+      const easing = 1 - Math.pow(1 - BASE_EASING, elapsed / FRAME_DURATION);
       const easedStep = distance * easing;
       const maximumStep = MAX_SCROLL_SPEED * (elapsed / 1000);
       const step = clamp(easedStep, -maximumStep, maximumStep);
@@ -81,21 +90,20 @@ export function useBoundedScroll() {
         current = target;
         window.scrollTo(0, current);
         lastFrame = 0;
-        document.body.classList.remove("is-scroll-gliding");
         releaseCompletion();
       }
     };
 
     const start = () => {
       if (frameId) return;
-      document.body.classList.add("is-scroll-gliding");
       frameId = window.requestAnimationFrame(frame);
     };
 
     const scrollTo = (nextTop, onComplete) => {
       releaseCompletion();
+      updateBounds();
       current = window.scrollY;
-      target = clamp(nextTop, 0, maxScroll());
+      target = clamp(nextTop, 0, maxScrollTop);
       completionCallback = onComplete || null;
       start();
     };
@@ -118,6 +126,7 @@ export function useBoundedScroll() {
       releaseCompletion();
 
       if (!frameId) {
+        updateBounds();
         current = window.scrollY;
         target = current;
       }
@@ -133,12 +142,12 @@ export function useBoundedScroll() {
         -MAX_WHEEL_IMPULSE,
         MAX_WHEEL_IMPULSE,
       );
-      const maximumLead = window.innerHeight * MAX_WHEEL_LEAD;
+      const maximumLead = viewportHeight * MAX_WHEEL_LEAD;
 
       target = clamp(
         target + impulse,
         Math.max(0, current - maximumLead),
-        Math.min(maxScroll(), current + maximumLead),
+        Math.min(maxScrollTop, current + maximumLead),
       );
       start();
     };
@@ -179,7 +188,10 @@ export function useBoundedScroll() {
     window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("touchstart", finish, { passive: true });
     window.addEventListener("blur", finish);
+    window.addEventListener("resize", updateBounds, { passive: true });
     document.addEventListener("click", onAnchorClick);
+    const resizeObserver = new ResizeObserver(updateBounds);
+    resizeObserver.observe(document.documentElement);
 
     return () => {
       finish();
@@ -188,7 +200,9 @@ export function useBoundedScroll() {
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("touchstart", finish);
       window.removeEventListener("blur", finish);
+      window.removeEventListener("resize", updateBounds);
       document.removeEventListener("click", onAnchorClick);
+      resizeObserver.disconnect();
     };
   }, []);
 }
