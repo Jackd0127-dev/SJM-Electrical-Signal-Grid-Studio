@@ -74,8 +74,9 @@ A separate crop was not needed: both requested details occupy large, clearly leg
 
 final result: passed
 
-## Services Contact Pills and Diagonal Exit
+## Services Contact Pills and Diagonal Exit — Partially Superseded
 
+- Historical CTA QA only: the Services CTA and contact pills were removed on 29 July 2026; the diagonal exit remains current.
 - Rendered evidence:
   - `output/playwright/services-contact-pills-desktop.png`
   - `output/playwright/services-contact-pills-mobile.png`
@@ -93,8 +94,9 @@ final result: passed
 - `git diff --check`: passed.
 - Protected Website Streamline masters: passed integrity verification after editing.
 
-## Direct Contact Actions and Enquiry Form
+## Direct Contact Actions and Enquiry Form — Services CTA Superseded
 
+- The footer enquiry form and directory contact links remain current; the former Services CTA/contact row documented below was removed on 29 July 2026.
 - Rendered evidence:
   - `output/playwright/services-email-call-whatsapp-desktop.png`
   - `output/playwright/services-email-call-whatsapp-mobile.png`
@@ -116,8 +118,9 @@ final result: passed
 - `git diff --check`: passed.
 - Protected Website Streamline masters: passed integrity verification after editing.
 
-## Final Project Zoom, Blur and Paper Transition
+## Final Project Zoom, Blur and Paper Transition — Superseded
 
+- Historical QA only: this terminal zoom treatment was removed on 29 July 2026 in favour of a normal vertical release into Approach.
 - Rendered evidence:
   - `output/playwright/projects-final-zoom-blur-transition.png`
   - `output/playwright/projects-final-paper-fill.png`
@@ -132,3 +135,107 @@ final result: passed
 - `npm run test:sites`: passed, 4/4.
 - `git diff --check`: passed.
 - Protected Website Streamline masters: passed integrity verification after editing.
+
+## Desktop Scroll Smoothness Alignment
+
+- Motion reference: `/Users/jackd/Desktop/Recreating Website Templates/Nesh/NESH-Azure-Edition` at `http://127.0.0.1:43113/`.
+- SJM target: `http://127.0.0.1:43116/`.
+- The visible layout, copy, colour, spacing, card order and project imagery remain unchanged.
+- Desktop scrolling now follows the reference architecture: Lenis and ScrollTrigger share the GSAP ticker, ticker lag smoothing is disabled, and the project rail uses a one-second scrub.
+- Project-card depth updates run on the rail timeline's eased clock, use cached geometry and direct compositor transforms, and perform no computed-style reads or CSS custom-property mutations in the update loop.
+- All project images are warmed and asynchronously decoded before the desktop rail is reached.
+- Reference and SJM wheel samples both settled document scrolling at roughly 0.4 seconds and allowed the rail to finish its eased catch-up at roughly 1 second.
+- Desktop drag-to-scroll, the final-card resting state, ordinary downward release, offscreen video pause, menu/navigation interactions and browser-console checks passed.
+- At 390 × 844, the site retained native document scrolling with no Lenis class, no GSAP rail transform, no Approach video element and no horizontal overflow; menu controls and all four project images also passed.
+- `npm run build`: passed.
+- `npm run test:sites`: passed, 4/4.
+- `git diff --check`: passed.
+
+## Final Project Vertical Release
+
+- Supersedes the earlier final-project zoom, blur and paper-wash transition.
+- Viewports verified: 1280 × 720 desktop and 390 × 844 mobile.
+- Desktop Projects pins only for the 2,391px horizontal track distance; at the endpoint, Approach begins exactly below the 720px viewport.
+- The fourth card remains a normal 819 × 500px card with its 13px media radius, full-opacity image, visible project copy and no card transform.
+- Scrolling another 200px moves the card upward by 200px and places Approach 200px into the viewport, confirming an ordinary vertical release rather than a zoom.
+- The blurred transition image and paper-wash layers are absent from both the DOM and the runtime asset warmup.
+- At 390px, the project cards remain a native vertical stack, the track transform is `none`, Approach follows 32px after the final card, and document width remains exactly 390px.
+- `npm run build`: passed.
+- `npm run test:sites`: passed, 4/4.
+- `git diff --check`: passed.
+
+## Immediate Approach Word Reveal
+
+- The desktop Approach trigger now begins when the section first crosses the bottom of the viewport instead of waiting until its top reaches 58% of the viewport.
+- Before the change, all four “Clear from the start” words remained at zero opacity through the first 300px after Projects released.
+- At 1280 × 720 after the change, the first word reaches 0.31 opacity after 20px of downward movement and 0.60 after 50px; by 150px, the four-word composition is visibly building across the frame.
+- The rest of the Approach morph, video and process animation timeline retains its existing order, duration and cinematic progress cap.
+- At 390 × 844, all four words remain statically visible at full opacity, the project track remains untransformed, no Lenis class is present, and document width remains exactly 390px.
+- `npm run build`: passed.
+- `npm run test:sites`: passed, 4/4.
+- `git diff --check`: passed.
+
+## Immediate Services Word Reveal
+
+- The desktop Services trigger now begins when the dark section first crosses the bottom of the viewport instead of waiting until its top reaches the top edge.
+- Before the change, all four “Useful expertise. Neatly delivered.” words remained at zero opacity through 700px of dark scrolling.
+- At 1280 × 720 after the change, the first word reaches 0.50 opacity after 20px, two words are visibly underway after 50px, and all four are visible after 150px.
+- The title morph, summary, service-card, editorial statement, and diagonal exit choreography retain their intended order and cinematic progress cap.
+- At 390 × 844, all four Services words remain statically visible at full opacity, the project track remains untransformed, no Lenis class is present, and document width remains exactly 390px.
+- `npm run build`: passed.
+- `npm run test:sites`: passed, 4/4.
+- `git diff --check`: passed.
+
+## Reference-Matched Services Editorial Reveal
+
+- Reference source: NESH Azure `.what_you_get-text` at `http://127.0.0.1:43113/#overview`.
+- The reference uses 135 independently scrubbed characters, each moving from 10% opacity, muted colour and a 5px vertical offset to full colour, full opacity and zero offset; it also preserves deliberate inline gaps.
+- The SJM replacement contains the same 135 animated-character count but uses normal selectable spaces instead of the reference’s oversized gaps: “Careful planning, precise installation, and clear communication combined — turning your electrical plans into safe, considered work that feels effortless.”
+- The previous “Discuss your project”, Email and Call controls are absent from the DOM and their icon imports, timeline steps and CSS are removed.
+- At 1280 × 720, the five service cards end at 528px and the completed 880 × 94px statement occupies 552–646px without clipping or horizontal overflow.
+- Mid-reveal, early characters are full white at zero offset while the final character remains at 10% opacity, muted `rgb(201, 194, 184)` and a 5px offset, confirming the directional character sweep.
+- The existing Services-to-Principles diagonal exit still clears the viewport and leaves Principles directly below the completed Services scroll range.
+- At 390 × 844, the statement follows the service cards by 30px, occupies 354 × 177px in natural flow, remains fully visible without GSAP, and document width remains exactly 390px.
+- `npm run build`: passed.
+- `npm run test:sites`: passed, 4/4.
+- `git diff --check`: passed.
+
+## Early Contact Form and Natural Editorial Spacing
+
+- The footer reveal now starts at `top bottom` instead of `top 84%`, and the kicker, heading, intro, form fields and form actions share one `footerIn` entry label.
+- Contact fields begin at `footerIn+=0.12` with a 0.42-second duration and 0.045-second stagger; form actions begin at `footerIn+=0.2`, so neither waits for the heading sequence to finish.
+- With the footer settled 5px below viewport entry, all fields are at zero opacity. After a 240px wheel gesture, the first three fields are already visibly progressing at 0.77, 0.59 and 0.32 opacity after 250ms; all four fields and the form actions reach full opacity by 650ms while the footer is still 485px below its sticky top position.
+- At the sticky entry point, the complete heading, intro, four fields, demo disclosure and submit button are all visible together within the 1280 × 720 viewport.
+- The Services sentence no longer uses empty CSS-width spacer elements. Its visual `textContent` is the exact authored sentence with ordinary spaces, it has zero legacy gap/space elements, and its desktop 880 × 94px footprint remains unchanged.
+- At 390 × 844, the sentence retains the same correctly spaced text, the form remains statically visible in natural flow, Lenis is absent, and document width remains exactly 390px.
+- Desktop and mobile console error checks passed.
+- `npm run build`: passed.
+- `npm run test:sites`: passed, 4/4.
+- `git diff --check`: passed.
+
+## Immediate Principles Reveal and Scrubbed Testimonial Rail
+
+- The desktop Principles trigger now starts at `top bottom`, so “Work should feel like.” begins animating as soon as the paper-coloured section crosses the bottom of the viewport instead of waiting until its top reaches 55% of the viewport.
+- The testimonial rail is driven directly by ScrollTrigger with a one-second scrub, matching the Projects rail, instead of passing through the slower `0.28`-progress-per-second cinematic controller.
+- At 1280 × 720, the first title line remains untouched 5px before section entry, reaches 0.27 opacity 20px after entry, and reaches 0.96 opacity 150px after entry; the second line is already at 0.86 and the rail at 0.67 by that point.
+- Across four equal 700px vertical-scroll samples, the 1,948px testimonial track advances smoothly to `-210px`, `-749px`, `-1,287px`, and `-1,825px`, with no horizontal document overflow.
+- The final orange principle still expands into the full-viewport takeover before the section releases naturally into the footer.
+- At 390 × 844, Principles remains a native vertical composition: all five cards are 354px wide, the track is an untransformed grid at full opacity, Lenis is absent, and document width remains exactly 390px.
+- `npm run build`: passed.
+- `npm run test:sites`: passed, 4/4.
+- `git diff --check`: passed.
+
+## Low-Sensitivity Approach and Services Choreography
+
+- Desktop Approach and Services still begin at `top bottom`, preserving the immediate section entry introduced in the earlier blank-space fixes.
+- Their pinned scroll ranges are now 4,720px each, increased from 3,320px for Approach and 3,220px for Services, so a normal wheel gesture advances a readable stage instead of skipping multiple stages.
+- Approach’s maximum timeline velocity is reduced from `0.34` to `0.16` progress per second; Services is reduced from `0.28` to `0.14`.
+- Services also gives the large-word reveal, pause and morph more timeline space: reveal duration/stagger is now `1.15 / 0.22`, the pause is `0.45`, and the morph duration/stagger is `1.8 / 0.07`.
+- Before the change, one 500px wheel gesture made all four Approach words at least 0.88 opaque within 250ms. After the change, the same sample produces progressive opacities of 0.94, 0.77, 0.24 and 0.00, with no collapse into the final heading after the gesture settles.
+- Before the change, Services revealed every word within 250ms and had already collapsed the heading to roughly 0.54 scale by 900ms. After the change, the fourth word remains hidden at 250ms, all four settle at their large scale after 900ms, and the morph requires a second deliberate gesture.
+- The completed Services scene still exits through the top-left corner at 4% opacity, Principles begins exactly at the next viewport boundary, and desktop document width remains 1,280px.
+- At 390 × 844, both sections remain natural-height, unpinned content with no GSAP word transforms, no Lenis instance, and no horizontal overflow.
+- Desktop and mobile console error checks passed.
+- `npm run build`: passed.
+- `npm run test:sites`: passed, 4/4.
+- `git diff --check`: passed.

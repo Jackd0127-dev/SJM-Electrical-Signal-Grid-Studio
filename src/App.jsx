@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { scrollToBounded, useBoundedScroll } from "./useBoundedScroll.js";
+import { initialiseBoundedScroll, scrollToBounded } from "./useBoundedScroll.js";
 import {
   ArrowDown,
   ArrowRight,
@@ -7,12 +7,10 @@ import {
   Buildings,
   Car,
   Check,
-  EnvelopeSimple,
   HandGrabbing,
   House,
   List,
   PaperPlaneTilt,
-  Phone,
   ShieldCheck,
   Sparkle,
   WhatsappLogo,
@@ -84,13 +82,16 @@ const projects = [
       "A methodical upgrade, carefully labelled, tested, and explained.",
     editorialTone: "dark",
     image: `${A}/project-consumer-unit-user.webp`,
-    transitionImage: `${A}/project-consumer-unit-blurred.webp`,
     width: 664,
     height: 1000,
     objectPosition: "center 48%",
     tags: ["Upgrade", "Inspection", "Care"],
   },
 ];
+
+const servicesStatement =
+  "Careful planning, precise installation, and clear communication combined — turning your electrical plans into safe, considered work that feels effortless.";
+const servicesStatementWords = servicesStatement.split(" ");
 
 const approachSteps = [
   ["01", "Listen", "Understand the space and the outcome"],
@@ -207,8 +208,6 @@ export function App() {
   const [formSubmitted, setFormSubmitted] = useState(false);
   const mobileLayoutRef = useRef(window.matchMedia("(max-width: 620px)").matches);
 
-  useBoundedScroll();
-
   const scrollToSection = (id) => {
     const element = document.getElementById(id);
     if (!element) return;
@@ -223,8 +222,6 @@ export function App() {
   };
 
   useEffect(() => {
-    if (!mobileLayoutRef.current) return undefined;
-
     const sources = projects.map((project) => project.image);
     const uniqueSources = [...new Set(sources)];
     let cancelled = false;
@@ -345,6 +342,7 @@ export function App() {
     let syncMorphTargets;
     let measurePrinciplesLayout;
     let measureProjectPositions;
+    let destroyBoundedScroll;
     const cinematicControllers = [];
 
     const initialiseDesktopAnimations = async () => {
@@ -356,11 +354,19 @@ export function App() {
 
       ScrollTrigger = scrollTriggerModule.ScrollTrigger;
       gsap.registerPlugin(ScrollTrigger);
-      gsap.ticker.lagSmoothing(500, 33);
+      gsap.ticker.lagSmoothing(0);
       ScrollTrigger.config({
         ignoreMobileResize: true,
         limitCallbacks: true,
       });
+      destroyBoundedScroll = await initialiseBoundedScroll({
+        gsap,
+        ScrollTrigger,
+      });
+      if (cancelled) {
+        destroyBoundedScroll?.();
+        return;
+      }
       document.body.classList.add("hero-intro-running");
 
       ctx = gsap.context(() => {
@@ -684,12 +690,12 @@ export function App() {
         approachTl,
         {
           trigger: ".about-section",
-          start: "top 58%",
+          start: "top bottom",
           end: "bottom bottom",
           refreshPriority: -1,
           invalidateOnRefresh: true,
         },
-        0.34,
+        0.16,
       );
 
       approachTl
@@ -758,7 +764,7 @@ export function App() {
       const serviceGuides = gsap.utils.toArray(".services-title-guide span");
       const servicesTitleStage = document.querySelector(".services-title-stage");
       const serviceCards = gsap.utils.toArray(".service-card");
-      const serviceContactPills = gsap.utils.toArray(".service-contact-pill");
+      const serviceStatementChars = gsap.utils.toArray(".services-statement-char");
       let serviceMorphTargets = measureWordTargets(
         serviceWords,
         serviceGuides,
@@ -785,14 +791,11 @@ export function App() {
       });
       gsap.set(".services-summary", { y: 20, autoAlpha: 0 });
       gsap.set(serviceCards, { y: 58, scale: 0.95, autoAlpha: 0 });
-      gsap.set(".services-cta", { y: 36, scale: 0.94, autoAlpha: 0 });
-      gsap.set(".services-contact-row", { y: 22, autoAlpha: 0 });
-      gsap.set(serviceContactPills, {
-        x: (index) => (index === 0 ? -42 : 42),
-        y: 24,
-        scale: 0.88,
-        rotate: (index) => (index === 0 ? -2.5 : 2.5),
-        autoAlpha: 0,
+      gsap.set(serviceStatementChars, {
+        color: "#c9c2b8",
+        filter: "blur(0px)",
+        opacity: 0.1,
+        y: 5,
       });
 
       const servicesTl = gsap.timeline({ paused: true });
@@ -800,12 +803,12 @@ export function App() {
         servicesTl,
         {
           trigger: ".services-section",
-          start: "top top",
+          start: "top bottom",
           end: "bottom bottom",
           refreshPriority: -2,
           invalidateOnRefresh: true,
         },
-        0.28,
+        0.14,
       );
 
       servicesTl
@@ -814,17 +817,17 @@ export function App() {
           scale: 1,
           rotate: 0,
           autoAlpha: 1,
-          duration: 0.78,
-          stagger: 0.14,
+          duration: 1.15,
+          stagger: 0.22,
           ease: "expo.out",
         })
-        .to({}, { duration: 0.22 })
+        .to({}, { duration: 0.45 })
         .to(serviceWords, {
           x: (index) => serviceMorphTargets[index].x,
           y: (index) => serviceMorphTargets[index].y,
           scale: (index) => serviceMorphTargets[index].scale,
-          duration: 1.12,
-          stagger: 0.035,
+          duration: 1.8,
+          stagger: 0.07,
           ease: "expo.inOut",
         })
         .to(".services-summary", {
@@ -841,29 +844,16 @@ export function App() {
           stagger: 0.13,
           ease: "power3.out",
         })
-        .to(".services-cta", {
+        .to(serviceStatementChars, {
+          color: "#ffffff",
+          filter: "blur(0px)",
+          opacity: 1,
           y: 0,
-          scale: 1,
-          autoAlpha: 1,
-          duration: 0.72,
-          ease: "back.out(1.2)",
+          force3D: true,
+          duration: 0.5,
+          stagger: 0.025,
+          ease: "power1.out",
         }, "+=0.08")
-        .to(".services-contact-row", {
-          y: 0,
-          autoAlpha: 1,
-          duration: 0.3,
-          ease: "power2.out",
-        }, "-=0.18")
-        .to(serviceContactPills, {
-          x: 0,
-          y: 0,
-          scale: 1,
-          rotate: 0,
-          autoAlpha: 1,
-          duration: 0.66,
-          stagger: 0.11,
-          ease: "back.out(1.55)",
-        }, "-=0.2")
         .addLabel("navigationComplete")
         .to({}, { duration: 0.3 })
         .to(".services-scene", {
@@ -947,18 +937,16 @@ export function App() {
         force3D: true,
       });
 
-      const principlesTl = gsap.timeline({ paused: true });
-      const principlesController = createCinematicScrollDriver(
-        principlesTl,
-        {
+      const principlesTl = gsap.timeline({
+        scrollTrigger: {
           trigger: ".clients-section",
-          start: "top 55%",
+          start: "top bottom",
           end: "bottom bottom",
+          scrub: 1,
           refreshPriority: -3,
           invalidateOnRefresh: true,
         },
-        0.28,
-      );
+      });
 
       principlesTl
         .addLabel("principlesIn")
@@ -1028,55 +1016,69 @@ export function App() {
           duration: 0.72,
           ease: "power2.inOut",
         }, "<+0.5");
-      cinematicNavigationRef.current.set("clients", () =>
-        principlesController.navigationLanding(
-          principlesTl.labels.navigationComplete / principlesTl.duration(),
-        ));
+      cinematicNavigationRef.current.set("clients", () => {
+        const landingProgress =
+          principlesTl.labels.navigationComplete / principlesTl.duration();
+        const principlesScrollTrigger = principlesTl.scrollTrigger;
+
+        return {
+          top:
+            principlesScrollTrigger.start +
+            (principlesScrollTrigger.end - principlesScrollTrigger.start) *
+              landingProgress,
+          release: () => {
+            principlesScrollTrigger.update();
+            principlesScrollTrigger.getTween()?.progress(1);
+            principlesTl.progress(landingProgress);
+          },
+        };
+      });
 
       const footerTl = gsap.timeline({
         scrollTrigger: {
           trigger: ".site-footer",
-          start: "top 84%",
+          start: "top bottom",
           toggleActions: "play none none reverse",
         },
       });
 
       footerTl
+        .addLabel("footerIn")
         .from(".footer-kicker", {
           y: 24,
           autoAlpha: 0,
-          duration: 0.55,
+          duration: 0.46,
           ease: "power3.out",
-        })
+        }, "footerIn")
         .from(".footer-heading-line > span", {
           yPercent: 120,
           rotate: 2,
           autoAlpha: 0,
           transformOrigin: "center bottom",
-          duration: 0.82,
-          stagger: 0.12,
+          duration: 0.68,
+          stagger: 0.08,
           ease: "power4.out",
-        }, "-=0.22")
+        }, "footerIn+=0.04")
         .from(".footer-contact-intro", {
           y: 18,
           autoAlpha: 0,
-          duration: 0.5,
+          duration: 0.4,
           ease: "power3.out",
-        }, "-=0.3")
+        }, "footerIn+=0.1")
         .from(".contact-form-field", {
-          y: 28,
+          y: 20,
           autoAlpha: 0,
-          duration: 0.54,
-          stagger: 0.07,
+          duration: 0.42,
+          stagger: 0.045,
           ease: "power3.out",
-        }, "-=0.2")
+        }, "footerIn+=0.12")
         .from(".contact-form-actions", {
-          y: 22,
-          scale: 0.96,
+          y: 16,
+          scale: 0.98,
           autoAlpha: 0,
-          duration: 0.58,
-          ease: "back.out(1.35)",
-        }, "-=0.18")
+          duration: 0.44,
+          ease: "power3.out",
+        }, "footerIn+=0.2")
         .from(".footer-directory > *", {
           y: 22,
           autoAlpha: 0,
@@ -1107,51 +1109,28 @@ export function App() {
       if (desktop.matches && trackRef.current && workRef.current) {
         const introSidebar = workRef.current.querySelector(".work-sidebar--attached");
         const introNumber = workRef.current.querySelector(".project-card--intro .project-number");
-        const lastProjectCard = workRef.current.querySelector(".project-card:last-child");
-        const lastProjectMedia = lastProjectCard?.querySelector(".project-media");
-        const lastProjectImage = lastProjectCard?.querySelector(".project-image");
-        const lastProjectBlur = lastProjectCard?.querySelector(".project-transition-blur");
-        const lastProjectWash = lastProjectCard?.querySelector(".project-transition-wash");
-        const lastProjectChrome = lastProjectCard
-          ? gsap.utils.toArray(
-            ".project-number, .project-editorial, .project-tags, .project-copy, .project-link",
-            lastProjectCard,
-          )
-          : [];
         const projectMedias = gsap.utils.toArray(".project-media", workRef.current);
         let mediaOffsets = [];
         let trackBaseLeft = 0;
         let projectMetrics = {
           distance: 0,
-          zoomDistance: 900,
-          zoomRatio: 1,
           sidebarWidth: 0,
-          lastCardScale: 1,
-          lastCardX: 0,
-          lastCardY: 0,
-          approachPaper: "rgb(238, 233, 225)",
           fullSizeAt: 0,
           approachFrom: 0,
           focusLine: 0,
-          zoomStart: 1,
         };
         const previousDepth = projectMedias.map(() => ({
           scale: Number.NaN,
           opacity: Number.NaN,
         }));
+        const setProjectOpacity = projectMedias.map((media) =>
+          gsap.quickSetter(media, "opacity"),
+        );
         measureProjectPositions = () => {
           const distance = Math.max(
             0,
             trackRef.current.scrollWidth - window.innerWidth + 32,
           );
-          const zoomDistance = Math.min(
-            1320,
-            Math.max(900, window.innerHeight * 1.25),
-          );
-          const paddingLeft = parseFloat(getComputedStyle(workRef.current).paddingLeft);
-          const paddingTop = parseFloat(getComputedStyle(workRef.current).paddingTop);
-          const finalLeft = paddingLeft + lastProjectCard.offsetLeft - distance;
-          const finalTop = paddingTop + lastProjectCard.offsetTop;
           const trackX = Number(gsap.getProperty(trackRef.current, "x")) || 0;
           trackBaseLeft = trackRef.current.getBoundingClientRect().left - trackX;
           mediaOffsets = projectMedias.map((media) => {
@@ -1165,36 +1144,14 @@ export function App() {
           });
           projectMetrics = {
             distance,
-            zoomDistance,
-            zoomRatio: zoomDistance / Math.max(1, distance),
             sidebarWidth: introSidebar?.offsetWidth || 0,
-            lastCardScale:
-              Math.max(
-                window.innerWidth / lastProjectCard.offsetWidth,
-                window.innerHeight / lastProjectCard.offsetHeight,
-              ) * 1.22,
-            lastCardX:
-              window.innerWidth / 2 -
-              (finalLeft + lastProjectCard.offsetWidth / 2),
-            lastCardY:
-              window.innerHeight / 2 -
-              (finalTop + lastProjectCard.offsetHeight / 2),
-            approachPaper: getComputedStyle(
-              document.querySelector(".about-section"),
-            ).backgroundColor,
             fullSizeAt: Math.min(320, window.innerWidth * 0.22),
             approachFrom: window.innerWidth * 0.94,
             focusLine: Math.min(window.innerWidth * 0.5, 720),
-            zoomStart: distance / Math.max(1, distance + zoomDistance),
           };
         };
-        const updateProjectDepth = (scrollProgress = 0) => {
-          const trackX = Number(gsap.getProperty(trackRef.current, "x")) || 0;
-          const finalCardDepth = gsap.utils.clamp(
-            0,
-            1,
-            (scrollProgress - (projectMetrics.zoomStart - 0.06)) / 0.06,
-          );
+        const updateProjectDepth = (trackPhase = 0) => {
+          const trackX = -projectMetrics.distance * trackPhase;
 
           projectMedias.forEach((media, index) => {
             if (index === 0) return;
@@ -1206,64 +1163,62 @@ export function App() {
                 Math.max(1, projectMetrics.approachFrom - projectMetrics.fullSizeAt),
             );
             const eased = progress * progress * (3 - 2 * progress);
-            const depthScale =
-              media === lastProjectMedia
-                ? Math.max(0.76 + eased * 0.24, 0.76 + finalCardDepth * 0.24)
-                : 0.76 + eased * 0.24;
-            const depthOpacity =
-              media === lastProjectMedia
-                ? Math.max(0.62 + eased * 0.38, 0.62 + finalCardDepth * 0.38)
-                : 0.62 + eased * 0.38;
+            const depthScale = 0.76 + eased * 0.24;
+            const depthOpacity = 0.62 + eased * 0.38;
 
             if (
               !Number.isFinite(previousDepth[index].scale) ||
               Math.abs(previousDepth[index].scale - depthScale) > 0.0015
             ) {
               previousDepth[index].scale = depthScale;
-              media.style.setProperty("--depth-scale", String(depthScale));
+              media.style.transform =
+                `translate3d(0, 0, 0) scale(${depthScale})`;
             }
             if (
               !Number.isFinite(previousDepth[index].opacity) ||
               Math.abs(previousDepth[index].opacity - depthOpacity) > 0.0015
             ) {
               previousDepth[index].opacity = depthOpacity;
-              media.style.opacity = String(depthOpacity);
+              setProjectOpacity[index](depthOpacity);
             }
           });
         };
 
         projectMedias.slice(1).forEach((media) => {
-          media.style.setProperty("--depth-scale", "0.76");
-          media.style.opacity = "0.62";
+          const index = projectMedias.indexOf(media);
+          media.style.transform = "translate3d(0, 0, 0) scale(0.76)";
+          setProjectOpacity[index](0.62);
           media.style.transformOrigin = "left center";
         });
         measureProjectPositions();
         ScrollTrigger.addEventListener("refreshInit", measureProjectPositions);
 
         const tween = gsap.timeline({
+          onUpdate: () => {
+            const trackPhase = gsap.utils.clamp(0, 1, tween.time());
+            updateProjectDepth(trackPhase);
+
+            const trackX = -projectMetrics.distance * trackPhase;
+            let next = 0;
+            for (let index = 1; index < mediaOffsets.length; index += 1) {
+              if (
+                trackBaseLeft + mediaOffsets[index] + trackX <=
+                projectMetrics.focusLine
+              ) {
+                next = index;
+              }
+            }
+            updateProjectIndex(next);
+          },
           scrollTrigger: {
             id: "projectsTrack",
             trigger: workRef.current,
             start: "top top",
-            end: () => `+=${projectMetrics.distance + projectMetrics.zoomDistance}`,
+            end: () => `+=${projectMetrics.distance}`,
             pin: true,
-            scrub: true,
+            scrub: 1,
             refreshPriority: 2,
             invalidateOnRefresh: true,
-            onUpdate: (self) => {
-              updateProjectDepth(self.progress);
-              const trackX = Number(gsap.getProperty(trackRef.current, "x")) || 0;
-              let next = 0;
-              for (let index = 1; index < mediaOffsets.length; index += 1) {
-                if (
-                  trackBaseLeft + mediaOffsets[index] + trackX <=
-                  projectMetrics.focusLine
-                ) {
-                  next = index;
-                }
-              }
-              updateProjectIndex(next);
-            },
           },
         });
         updateProjectDepth(0);
@@ -1295,71 +1250,6 @@ export function App() {
               ease: "power2.out",
             },
             0.02,
-          )
-          .to(
-            lastProjectCard,
-            {
-              x: () => projectMetrics.lastCardX,
-              y: () => projectMetrics.lastCardY,
-              scale: () => projectMetrics.lastCardScale,
-              rotate: 0,
-              zIndex: 20,
-              transformOrigin: "center center",
-              duration: () => projectMetrics.zoomRatio,
-              ease: "power2.inOut",
-            },
-            1,
-          )
-          .to(
-            lastProjectMedia,
-            {
-              borderRadius: 0,
-              duration: () => projectMetrics.zoomRatio,
-              ease: "power2.inOut",
-            },
-            1,
-          )
-          .to(
-            lastProjectImage,
-            {
-              scale: 1.08,
-              autoAlpha: 0.16,
-              transformOrigin: "center center",
-              duration: () => projectMetrics.zoomRatio,
-              ease: "power2.inOut",
-            },
-            1,
-          )
-          .to(
-            lastProjectBlur,
-            {
-              scale: 1.18,
-              autoAlpha: 0.76,
-              transformOrigin: "center center",
-              duration: () => projectMetrics.zoomRatio,
-              ease: "power2.inOut",
-            },
-            1,
-          )
-          .to(
-            lastProjectWash,
-            {
-              backgroundColor: () => projectMetrics.approachPaper,
-              opacity: 1,
-              duration: () => projectMetrics.zoomRatio,
-              ease: "sine.inOut",
-            },
-            1,
-          )
-          .to(
-            lastProjectChrome,
-            {
-              autoAlpha: 0,
-              duration: 0.13,
-              stagger: 0.012,
-              ease: "power2.out",
-            },
-            1.035,
           );
         workScrollRef.current = tween.scrollTrigger;
       }
@@ -1386,6 +1276,7 @@ export function App() {
         ScrollTrigger.removeEventListener("refreshInit", measureProjectPositions);
       }
       document.body.classList.remove("hero-intro-running");
+      destroyBoundedScroll?.();
       ctx?.revert();
     };
   }, []);
@@ -1541,7 +1432,11 @@ export function App() {
               onPointerMove={(event) => {
                 const drag = projectDragRef.current;
                 if (!drag.active || !workScrollRef.current) return;
-                window.scrollTo(0, drag.startScroll - (event.clientX - drag.startX) * 2.2);
+                scrollToBounded(
+                  drag.startScroll - (event.clientX - drag.startX) * 2.2,
+                  undefined,
+                  { immediate: true },
+                );
               }}
               onPointerUp={(event) => {
                 projectDragRef.current.active = false;
@@ -1603,21 +1498,7 @@ export function App() {
                         height={project.height}
                         style={{ objectPosition: project.objectPosition || "center" }}
                       />
-                      {project.transitionImage && !mobileLayoutRef.current && (
-                        <img
-                          className="project-transition-blur"
-                          src={project.transitionImage}
-                          alt=""
-                          aria-hidden="true"
-                          width={project.width}
-                          height={project.height}
-                          decoding="async"
-                        />
-                      )}
                       <div className="project-scrim" />
-                      {index === projects.length - 1 && (
-                        <div className="project-transition-wash" aria-hidden="true" />
-                      )}
                       <span className="project-number">{String(index + 1).padStart(2, "0")}</span>
                       {index > 0 && (
                         <div
@@ -1759,40 +1640,27 @@ export function App() {
                   ))}
                 </div>
 
-                <div className="services-cta">
-                  <ArrowLink href="#contact" inverse>Discuss your project</ArrowLink>
-                </div>
-
-                <div className="services-contact-row" aria-label="Contact options">
-                  <a
-                    className="service-contact-pill service-contact-pill--email"
-                    href={`mailto:${DEMO_EMAIL}`}
-                  >
-                    <span className="service-contact-pill__icon" aria-hidden="true">
-                      <EnvelopeSimple weight="bold" />
-                    </span>
-                    <span className="service-contact-pill__copy">
-                      <small>Email</small>
-                      <strong>Send an email</strong>
-                    </span>
-                    <ArrowUpRight className="service-contact-pill__arrow" weight="bold" aria-hidden="true" />
-                  </a>
-
-                  <a
-                    className="service-contact-pill service-contact-pill--call"
-                    href={`tel:${DEMO_PHONE_LINK}`}
-                    aria-label={`Call SJM Electrical on ${DEMO_PHONE_DISPLAY}`}
-                  >
-                    <span className="service-contact-pill__icon" aria-hidden="true">
-                      <Phone weight="fill" />
-                    </span>
-                    <span className="service-contact-pill__copy">
-                      <small>Call</small>
-                      <strong>{DEMO_PHONE_DISPLAY}</strong>
-                    </span>
-                    <ArrowUpRight className="service-contact-pill__arrow" weight="bold" aria-hidden="true" />
-                  </a>
-                </div>
+                <p className="services-statement" aria-label={servicesStatement}>
+                  <span className="services-statement-visual" aria-hidden="true">
+                    {servicesStatementWords.map((word, wordIndex) => (
+                      <span className="services-statement-token" key={`${word}-${wordIndex}`}>
+                        <span className="services-statement-word">
+                          {[...word].map((character, characterIndex) => (
+                            <span
+                              className="services-statement-char"
+                              key={`${character}-${characterIndex}`}
+                            >
+                              {character}
+                            </span>
+                          ))}
+                        </span>
+                        {wordIndex < servicesStatementWords.length - 1 && (
+                          " "
+                        )}
+                      </span>
+                    ))}
+                  </span>
+                </p>
               </div>
             </div>
           </div>

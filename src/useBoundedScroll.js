@@ -1,208 +1,94 @@
-import { useEffect } from "react";
+const SCROLL_DURATION = 0.4;
+const SCROLL_EASING = (progress) =>
+  Math.min(1, 1.001 - Math.pow(2, -10 * progress));
 
-const MAX_SCROLL_SPEED = 2600;
-const MAX_WHEEL_IMPULSE = 320;
-const MAX_WHEEL_LEAD = 1.35;
-const BASE_EASING = 0.2;
-const FRAME_DURATION = 1000 / 60;
+let activeController = null;
 
-let activeScrollTo = null;
-
-const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
-
-export function scrollToBounded(top, onComplete) {
-  if (activeScrollTo) {
-    activeScrollTo(top, onComplete);
+export function scrollToBounded(top, onComplete, options = {}) {
+  if (activeController) {
+    activeController.scrollTo(top, onComplete, options);
     return;
   }
 
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   window.scrollTo({
     top,
-    behavior: reduceMotion ? "auto" : "smooth",
+    behavior: reduceMotion || options.immediate ? "auto" : "smooth",
   });
-  if (onComplete) {
-    if (reduceMotion) {
-      window.requestAnimationFrame(onComplete);
-    } else {
-      window.setTimeout(onComplete, 700);
-    }
+
+  if (!onComplete) return;
+  if (reduceMotion || options.immediate) {
+    window.requestAnimationFrame(onComplete);
+  } else {
+    window.setTimeout(onComplete, 700);
   }
 }
 
-export function useBoundedScroll() {
-  useEffect(() => {
-    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const finePointer = window.matchMedia("(pointer: fine)");
-    if (reduceMotion.matches || !finePointer.matches) return undefined;
+export async function initialiseBoundedScroll({ gsap, ScrollTrigger }) {
+  if (activeController) return activeController.destroy;
 
-    let current = window.scrollY;
-    let target = current;
-    let frameId = 0;
-    let lastFrame = 0;
-    let completionCallback = null;
-    let maxScrollTop = 0;
-    let viewportHeight = window.innerHeight;
+  const { default: Lenis } = await import("lenis");
+  const lenis = new Lenis({
+    duration: SCROLL_DURATION,
+    easing: SCROLL_EASING,
+    lerp: 0.1,
+    smoothWheel: true,
+    autoRaf: false,
+  });
 
-    const updateBounds = () => {
-      viewportHeight = window.innerHeight;
-      maxScrollTop = Math.max(
-        0,
-        document.documentElement.scrollHeight - viewportHeight,
-      );
-      target = clamp(target, 0, maxScrollTop);
-    };
-    updateBounds();
+  const updateScrollTrigger = () => ScrollTrigger.update();
+  const tick = (time) => lenis.raf(time * 1000);
+  const unsubscribeScroll = lenis.on("scroll", updateScrollTrigger);
 
-    const releaseCompletion = () => {
-      const callback = completionCallback;
-      completionCallback = null;
-      callback?.();
-    };
+  gsap.ticker.add(tick);
 
-    const finish = () => {
-      if (frameId) window.cancelAnimationFrame(frameId);
-      frameId = 0;
-      lastFrame = 0;
-      current = window.scrollY;
-      target = current;
-      releaseCompletion();
-    };
+  const scrollTo = (top, onComplete, options = {}) => {
+    lenis.scrollTo(top, {
+      duration: SCROLL_DURATION,
+      easing: SCROLL_EASING,
+      immediate: Boolean(options.immediate),
+      force: true,
+      onComplete,
+    });
+  };
 
-    const frame = (now) => {
-      frameId = 0;
-      const elapsed = clamp(lastFrame ? now - lastFrame : 16.667, 8, 34);
-      lastFrame = now;
-      target = clamp(target, 0, maxScrollTop);
+  const onAnchorClick = (event) => {
+    if (
+      event.defaultPrevented ||
+      event.button !== 0 ||
+      event.metaKey ||
+      event.ctrlKey ||
+      event.shiftKey ||
+      event.altKey
+    ) {
+      return;
+    }
 
-      const distance = target - current;
-      const easing = 1 - Math.pow(1 - BASE_EASING, elapsed / FRAME_DURATION);
-      const easedStep = distance * easing;
-      const maximumStep = MAX_SCROLL_SPEED * (elapsed / 1000);
-      const step = clamp(easedStep, -maximumStep, maximumStep);
+    const link = event.target instanceof Element
+      ? event.target.closest('a[href^="#"]')
+      : null;
+    if (!link || link.classList.contains("skip-link")) return;
 
-      current = Math.abs(distance) < 0.6 ? target : current + step;
-      window.scrollTo(0, current);
+    const id = link.getAttribute("href")?.slice(1);
+    const destination = id ? document.getElementById(id) : null;
+    if (!destination) return;
 
-      if (Math.abs(target - current) > 0.6) {
-        frameId = window.requestAnimationFrame(frame);
-      } else {
-        current = target;
-        window.scrollTo(0, current);
-        lastFrame = 0;
-        releaseCompletion();
-      }
-    };
+    event.preventDefault();
+    window.history.replaceState(null, "", `#${id}`);
+    scrollTo(destination.getBoundingClientRect().top + window.scrollY);
+  };
 
-    const start = () => {
-      if (frameId) return;
-      frameId = window.requestAnimationFrame(frame);
-    };
+  document.addEventListener("click", onAnchorClick);
 
-    const scrollTo = (nextTop, onComplete) => {
-      releaseCompletion();
-      updateBounds();
-      current = window.scrollY;
-      target = clamp(nextTop, 0, maxScrollTop);
-      completionCallback = onComplete || null;
-      start();
-    };
+  const destroy = () => {
+    if (activeController?.destroy !== destroy) return;
+    activeController = null;
+    document.removeEventListener("click", onAnchorClick);
+    unsubscribeScroll();
+    gsap.ticker.remove(tick);
+    lenis.destroy();
+  };
 
-    activeScrollTo = scrollTo;
-
-    const onWheel = (event) => {
-      if (
-        event.defaultPrevented ||
-        event.ctrlKey ||
-        event.metaKey ||
-        document.body.classList.contains("menu-is-open") ||
-        document.body.classList.contains("hero-intro-running") ||
-        Math.abs(event.deltaX) > Math.abs(event.deltaY)
-      ) {
-        return;
-      }
-
-      event.preventDefault();
-      releaseCompletion();
-
-      if (!frameId) {
-        updateBounds();
-        current = window.scrollY;
-        target = current;
-      }
-
-      const unit =
-        event.deltaMode === WheelEvent.DOM_DELTA_LINE
-          ? 16
-          : event.deltaMode === WheelEvent.DOM_DELTA_PAGE
-            ? window.innerHeight
-            : 1;
-      const impulse = clamp(
-        event.deltaY * unit,
-        -MAX_WHEEL_IMPULSE,
-        MAX_WHEEL_IMPULSE,
-      );
-      const maximumLead = viewportHeight * MAX_WHEEL_LEAD;
-
-      target = clamp(
-        target + impulse,
-        Math.max(0, current - maximumLead),
-        Math.min(maxScrollTop, current + maximumLead),
-      );
-      start();
-    };
-
-    const onScroll = () => {
-      if (frameId) return;
-      current = window.scrollY;
-      target = current;
-    };
-
-    const onAnchorClick = (event) => {
-      if (
-        event.defaultPrevented ||
-        event.button !== 0 ||
-        event.metaKey ||
-        event.ctrlKey ||
-        event.shiftKey ||
-        event.altKey
-      ) {
-        return;
-      }
-
-      const link = event.target instanceof Element
-        ? event.target.closest('a[href^="#"]')
-        : null;
-      if (!link || link.classList.contains("skip-link")) return;
-
-      const id = link.getAttribute("href")?.slice(1);
-      const destination = id ? document.getElementById(id) : null;
-      if (!destination) return;
-
-      event.preventDefault();
-      window.history.replaceState(null, "", `#${id}`);
-      scrollTo(destination.getBoundingClientRect().top + window.scrollY);
-    };
-
-    window.addEventListener("wheel", onWheel, { passive: false });
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("touchstart", finish, { passive: true });
-    window.addEventListener("blur", finish);
-    window.addEventListener("resize", updateBounds, { passive: true });
-    document.addEventListener("click", onAnchorClick);
-    const resizeObserver = new ResizeObserver(updateBounds);
-    resizeObserver.observe(document.documentElement);
-
-    return () => {
-      finish();
-      if (activeScrollTo === scrollTo) activeScrollTo = null;
-      window.removeEventListener("wheel", onWheel);
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("touchstart", finish);
-      window.removeEventListener("blur", finish);
-      window.removeEventListener("resize", updateBounds);
-      document.removeEventListener("click", onAnchorClick);
-      resizeObserver.disconnect();
-    };
-  }, []);
+  activeController = { destroy, scrollTo };
+  return destroy;
 }
