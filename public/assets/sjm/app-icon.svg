@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 673.171 673.171" role="img" aria-labelledby="title desc">
+  <title id="title">SJM Electrical icon</title>
+  <desc id="desc">Standalone editable vector brand mark.</desc>
+  <g id="background"><rect x="0" y="0" width="673.171" height="673.171" rx="121.171" fill="#1E1E1D"/></g>
+  <g id="icon" transform="translate(-286.415 -176.415)">
+      <path id="icon-dark-01" d="M 583 240 L 553 246 L 528 254 L 495 269 L 469 285 L 448 301 L 422 326 L 402 351 L 386 376 L 374 400 L 363 429 L 356 456 L 352 482 L 351 521 L 353 543 L 360 577 L 369 604 L 389 583 L 379 540 L 377 518 L 378 485 L 386 444 L 395 418 L 408 391 L 424 366 L 440 346 L 460 326 L 484 307 L 505 294 L 532 281 L 558 272 L 583 267 Z" fill="#FFFFFF" fill-rule="evenodd" clip-rule="evenodd"/>
+      <path id="icon-dark-02" d="M 642 409 L 598 409 L 597 608 L 591 621 L 576 633 L 569 635 L 534 636 L 534 677 L 576 677 L 596 671 L 616 658 L 625 649 L 636 631 L 642 608 Z" fill="#FFFFFF" fill-rule="evenodd" clip-rule="evenodd"/>
+      <path id="icon-dark-03" d="M 428 434 L 413 445 L 404 464 L 404 503 L 413 522 L 423 530 L 439 536 L 512 538 L 519 547 L 519 566 L 517 570 L 509 576 L 414 576 L 376 621 L 394 654 L 409 675 L 431 700 L 456 722 L 487 743 L 519 759 L 547 769 L 579 775 L 588 750 L 573 748 L 536 737 L 508 724 L 484 709 L 459 689 L 435 664 L 415 636 L 402 612 L 404 610 L 519 610 L 536 604 L 547 594 L 555 575 L 556 555 L 555 537 L 548 520 L 536 509 L 519 503 L 447 501 L 440 492 L 440 474 L 445 467 L 453 464 L 541 464 L 568 430 L 444 430 Z" fill="#FFFFFF" fill-rule="evenodd" clip-rule="evenodd"/>
+      <path id="icon-dark-04" d="M 842 430 L 807 430 L 754 513 L 748 507 L 699 430 L 663 430 L 663 677 L 700 677 L 701 503 L 753 579 L 804 503 L 805 610 L 842 610 L 843 613 L 828 640 L 807 668 L 782 693 L 763 708 L 741 722 L 707 738 L 673 748 L 642 752 L 617 779 L 648 779 L 680 774 L 714 764 L 746 750 L 779 730 L 803 711 L 831 682 L 852 653 L 872 615 L 884 580 L 842 578 Z" fill="#FFFFFF" fill-rule="evenodd" clip-rule="evenodd"/>
+      <path id="icon-accent-01" d="M 603 237 L 602 344 L 594 348 L 594 357 L 644 357 L 643 347 L 634 344 L 634 237 Z" fill="#FFFFFF" fill-rule="evenodd" clip-rule="evenodd"/>
+      <path id="icon-accent-02" d="M 653 239 L 654 266 L 671 268 L 706 278 L 749 299 L 783 324 L 808 349 L 825 371 L 849 415 L 858 440 L 865 469 L 868 494 L 868 526 L 862 563 L 888 565 L 894 524 L 894 492 L 888 451 L 877 414 L 857 372 L 840 346 L 819 321 L 799 302 L 760 274 L 733 260 L 701 248 L 668 240 Z" fill="#FFFFFF" fill-rule="evenodd" clip-rule="evenodd"/>
+      <path id="icon-accent-03" d="M 588 364 L 588 371 L 590 373 L 649 373 L 651 371 L 651 364 L 648 362 L 591 362 Z" fill="#FFFFFF" fill-rule="evenodd" clip-rule="evenodd"/>
+      <path id="icon-accent-04" d="M 588 379 L 589 387 L 651 386 L 651 379 L 648 377 L 602 377 Z" fill="#FFFFFF" fill-rule="evenodd" clip-rule="evenodd"/>
+      <path id="icon-accent-05" d="M 588 394 L 588 401 L 591 403 L 648 403 L 651 401 L 651 393 L 649 392 L 590 392 Z" fill="#FFFFFF" fill-rule="evenodd" clip-rule="evenodd"/>
+      <path id="icon-accent-06" d="M 702 504 L 701 677 L 663 678 L 701 678 Z" fill="#FFFFFF" fill-rule="evenodd" clip-rule="evenodd"/>
+      <path id="icon-accent-07" d="M 648 639 L 576 723 L 616 724 L 590 788 L 675 696 L 633 694 Z" fill="#FFFFFF" fill-rule="evenodd" clip-rule="evenodd"/>
+  </g>
+</svg>
