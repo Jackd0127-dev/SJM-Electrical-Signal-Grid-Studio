@@ -16,7 +16,7 @@ Build app UI in `src/`. Keep `.openai/hosting.json`, `worker/index.js`, `scripts
 - Preserve the source scroll choreography, motion quality, responsive behaviour, and interactions.
 - Use only local SJM brand assets and original locally bundled trade photography. Do not restore NESH identity, portrait, client media, external links, or third-party endorsements.
 - Keep the portfolio disclosure, `noindex, nofollow`, illustrative `.example` contact address, and non-submitting contact behaviour until real business details and claims are supplied and authorised.
-- Do not overwrite `/Users/jackd/Desktop/Recreating Website Templates/Nesh/NESH-Signal-Grid-Studio` or `/Users/jackd/Desktop/Novas-Trade-Sites/Template-NESH`.
+- Do not overwrite `/Volumes/Extreme Pro/Jack - Organized/02 Business/Novas Agency/Template Recreation/Nesh/NESH-Signal-Grid-Studio` or `/Volumes/Extreme Pro/Jack - Organized/02 Business/Novas Agency/Trade Sites/Template-NESH`.
 - On mobile, compose the team photography behind the hero copy, keep the two proof statistics followed by the SJM wordmark, omit the five working-value bullets, and drive the centred project-card rail from vertical scrolling before releasing into the next section.
 - Keep the mobile menu control pinned to the header's top-right cell without a stretched tap/focus background; centre the hero CTAs and proof cards, and present Services as a natural single-column page flow rather than a pinned horizontal animation.
 - Present the mobile concept-project reel as a centred vertical stack driven by ordinary page scrolling, with a mobile-specific “Scroll to explore concepts” cue; keep the Services Email and Call pills centred as an equal two-column row.
